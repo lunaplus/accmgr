@@ -1,0 +1,14 @@
+<Directory "/var/www/html/accmgr">
+  AllowOverride None
+  Options ExecCGI FollowSymLinks
+  AddHandler cgi-script .cgi
+  DirectoryIndex index.cgi
+
+  RewriteEngine On
+  #RewriteCond %{REQUEST_FILENAME} !-f
+  #RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !.*\.js
+  RewriteCond %{REQUEST_FILENAME} !.*\.css
+  RewriteCond %{REQUEST_FILENAME} !index\.cgi
+  RewriteRule ^(.*)$ index.cgi/$1 [L]
+</Directory>

@@ -1,0 +1,13 @@
+# encoding: utf-8
+# Model Master
+require 'mysql2'
+
+class ModelMaster
+  DBNAME = "dbname_foobar"
+  def self.getMysqlClient
+    return Mysql2::Client.new(:host => "hostname",
+                              :username => "username",
+                              :password => "password",
+                              :database => DBNAME)
+  end
+end

@@ -1,0 +1,85 @@
+#reciveDataSpace {
+    overflow: scroll;
+    height: 400px;
+}
+#divHeader {
+    background-color: #cccccc;
+}
+#reciveArea {
+    background-color: #fcfcfc;
+}
+#errmsg {
+    color: red;
+}
+/* for dropdown menu start */
+.dropmenu{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.dropmenu:before, .dropmenu:after{
+    content: "";
+    display: table;
+}
+.dropmenu:after{
+    clear: both;
+}
+.dropmenu li{
+    position: relative;
+    width: 10%;
+    float: left;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+.dropmenu li a{
+    display: block;
+    margin: 0;
+    padding: 5px 0 5px;
+    background: #ffffff;
+    line-height: 1;
+    text-decoration: none;
+}
+.dropmenu li ul{
+    list-style: none;
+    position: absolute;
+    z-index: 9999;
+    top: 100%
+    left: 0;
+    margin: 0;
+    padding: 0;
+}
+.dropmenu li ul li{
+    width: 100%;
+}
+.dropmenu li ul li a{
+    border-top: 1px solid #999999;
+    text-align: left;
+}
+.dropmenu li:hover > a{
+    background: #e0eee0;
+}
+.dropmenu li a:hover{
+    background: #e0eee0;
+}
+#normal li ul{
+    display: none;
+}
+#normal li:hover ul{
+    display: block;
+}
+/* for dropdown menu end */
+#pwdarea div{
+    margin-left: 40px;
+}
+#updroomarea div{
+    margin-left: 40px;
+}
+#delroomarea div{
+    margin-left: 40px;
+}
+#reciveDataSpace li{
+    margin-bottom: 5px;
+    padding-left: 10em;
+    text-indent: -10em;
+}

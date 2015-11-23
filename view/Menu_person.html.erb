@@ -1,0 +1,41 @@
+<div id="personContents">
+  <% unless personerr.nil? %>
+  <div id="personerr">
+    <%= personerr %>
+  </div>
+  <% end %>
+  <form method="post" action="<%= formaction %>">
+    <div id="uidarea">
+      ユーザID : <%= uid %>
+    </div>
+    <div id="pwdarea">
+      パスワード :
+      <input type="checkbox" name="pwdcheck" id="pwdcheck">
+      <div id="newpwdarea">
+	新パスワード : <input type="password" name="newpwd" id="newpwd"
+			      value="">
+	<span id="newpwderr"></span>
+      </div>
+      <div id="cfnewpwdarea">
+	確認用 : <input  type="password" name="cfnewpwd" id="cfnewpwd"
+			 value="">
+	<span id="cfnewpwderr"></span>
+      </div>
+    </div>
+    <div id="dispnamearea">
+      表示名(<span id="curdispnm"><%= dispName %></span>) :
+      <input type="checkbox" name="dispnmcheck" id="dispnmcheck">
+      <input type="textbox" name="newdispnm" id="newdispnm"
+	     value="<%= dispName %>">
+      <span id="dispnmerr"></span>
+    </div>
+    <div id="submitarea">
+      現在のパスワード :
+      <input type="password" name="curpwd" id="curpwd" value="">
+      <span id="curpwderr"></span>
+      <br><input type="submit" name="submitchange" id="submitchange"
+	     value="更新">
+    </div>
+  </form>
+</div>
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>person.js'></script>
