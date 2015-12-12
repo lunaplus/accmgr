@@ -21,6 +21,7 @@ class Specification < ModelMaster
     reterr = nil
     begin
       # TODO: input check from, to
+
       queryStr = <<-SQL
         select SID, wpdate, EID, withdrawFrom, paymentTo,
                amount, paymentMonth
