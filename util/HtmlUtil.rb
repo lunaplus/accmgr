@@ -73,8 +73,8 @@ class HtmlUtil
     return (createUrl MenuCtrlName,action)
   end
 
-  def self.getMainUrl
-    return (createUrl MainCtrlName,"index")
+  def self.getMainUrl act="index"
+    return (createUrl MainCtrlName,act)
   end
 
   def self.createUrl ctrl,act="",arg=nil
@@ -163,53 +163,53 @@ class HtmlUtil
     return Date.parse(str, "%Y-%m-%d")
   end
 
-## ===================================================================
-=begin # no use
-  def self.createYearSel selname,year=0
+  def self.createYearSel sel=0,from=-1,to=1
     # year sel : 入力日とその前後1年分の年数を表示する。デフォルトは当年。
     today = Time.now
-    defyear = today.year
-    defyear = year if year!=0 and (defyear-1)<=year and year<=(defyear+1)
-    return <<-HTML
-        <select name="#{selname}">
-          <option value="#{today.year-1}">#{today.year-1}</option>
-          <option value="#{today.year}" selected>#{today.year}</option>
-          <option value="#{today.year+1}">#{today.year+1}</option>
-        </select>
-    HTML
+    defyear = today.year + sel
+    retyear = ""
+    min = today.year + (from < to ? from : to)
+    max = today.year + (from <= to ? to : from)
+    min.upto(max) do |i|
+      retyear += "<option value=\"#{i}\""
+      retyear += " selected " if i == defyear
+      retyear += ">#{i}</option>"
     end
+    return retyear
+  end
 
-  def self.createMonthSel selname,df=-1
+  def self.createMonthSel df=0,dfset=true
     # month sel : 12ヶ月分全部表示する。デフォルトは当月
     today = Time.now
     defaultSel = df
     defaultSel = today.month if df < 1 or df > 12
 
-    monthSel = "<select name=\"#{selname}\">\n"
+    monthSel = ""
     1.upto(12) do |i|
       monthSel += "<option value=\"#{i}\""
-      monthSel += " selected" if i == defaultSel
+      monthSel += " selected" if i == defaultSel and dfset
       monthSel += ">#{i}</option>\n"
     end
-    monthSel += "</select>\n"
     return monthSel
   end
 
-  def self.createDateSel selname,df=-1
+  def self.createDateSel df=0
     # date sel : 31日分全部表示する。デフォルトは当日
     today = Time.now
-    defaultSel = df
+    defaultSel = df-1
     defaultSel = today.day if df < 1 or df > 31
 
-    dateSel =  "<select name=\"#{selname}\">\n"
+    dateSel = ""
     1.upto(31) do |i|
       dateSel += "<option value=\"#{i}\""
       dateSel += " selected" if i == defaultSel
       dateSel += ">#{i}</option>\n"
     end
-    dateSel += "</select>\n"
     return dateSel
   end
+
+## ===================================================================
+=begin # no use
 
   def self.createDate y,m,d
     return Date.new(y,m,d)

@@ -1,6 +1,6 @@
 create table specifications (
        SID bigint auto_increment primary key,
-       wpdate datetime,
+       wpdate datetime, -- withdraw or payment
        EID bigint,
        withdrawFrom bigint,
        paymentTo bigint,
