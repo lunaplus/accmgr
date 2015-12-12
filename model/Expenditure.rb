@@ -16,6 +16,8 @@ class Expenditure < ModelMaster
   C_IN = 1
   C_OUT = 2
   C_MOVE = 3
+  C_DBIN = 1
+  C_DBOUT = 0
 
   C_MAXNAMELEN = 20
 
@@ -29,9 +31,9 @@ class Expenditure < ModelMaster
 
     case clsfy
     when C_IN then
-      cls = "b'1'"
+      cls = "b'" + C_DBIN.to_s + "'"
     when C_OUT then
-      cls = "b'0'"
+      cls = "b'" + C_DBOUT.to_s + "'"
     when C_MOVE then
       cls = "null"
     else
@@ -41,12 +43,14 @@ class Expenditure < ModelMaster
 
     return {:retval => cls, :err => iserr}
   end
+  private_class_method :clsfyToDbVal
 
   def self.insExp(expName, clsfy)
     retval = false
     reterr = nil
     begin
-      if expName.nil? or expName.length < 1 or expName.length > C_MAXNAMELEN
+      if expName.nil? or (not expName.instance_of?(String)) or
+          expName.length < 1 or expName.length > C_MAXNAMELEN
         reterr = C_EXPNAMEERR
       elsif (not clsfy.instance_of?(Fixnum)) or clsfy < C_IN or clsfy > C_MOVE
         reterr = C_CLASSIFYERR
@@ -64,7 +68,7 @@ class Expenditure < ModelMaster
                values('#{enEsc}', #{cls})
         SQL
         mysqlClient.query(queryStr)
-        retval = true
+        retval = (mysqlClient.affected_rows > 0)
       end
     rescue Mysql2::Error => e
       reterr = e.message
@@ -85,7 +89,8 @@ class Expenditure < ModelMaster
       elsif expName.nil? and clsfy.nil?
         reterr = "費目名または収支区分のいずれか１つ以上指定してください。"
       elsif (not expName.nil?) and
-          (expName.length < 1 or expName.length > C_MAXNAMELEN)
+          (   (not expName.instance_of?(String)) or
+              expName.length < 1 or expName.length > C_MAXNAMELEN)
         reterr = C_EXPNAMEERR
       elsif (not clsfy.nil?) and
           ((not clsfy.instance_of?(Fixnum)) or clsfy < C_IN or clsfy > C_MOVE)
@@ -111,7 +116,7 @@ class Expenditure < ModelMaster
         queryStr += " where EID = #{eid.to_s}"
 
         mysqlClient.query(queryStr)
-        retval = true
+        retval = (mysqlClient.affected_rows > 0)
       end
     rescue Mysql2::Error => e
       reterr = e.message
@@ -134,7 +139,7 @@ class Expenditure < ModelMaster
         mysqlClient = getMysqlClient
         mysqlClient.query(queryStr)
 
-        retval = true
+        retval = (mysqlClient.affected_rows > 0)
       end
     rescue Mysql2::Error => e
       reterr = e.message
@@ -149,15 +154,27 @@ class Expenditure < ModelMaster
     reterr = nil
     begin
       queryStr =
-        " select EID, name, classify from expenditures order by EID "
+        " select EID, name, classify+0 as cls from expenditures order by EID "
       mysqlClient = getMysqlClient
       rsltSet = mysqlClient.query(queryStr)
 
       rsltSet.each do |row|
+        case row["cls"]
+        when C_DBIN
+          tmpcls = C_IN
+        when C_DBOUT
+          tmpcls = C_OUT
+        when nil
+          tmpcls = C_MOVE
+        else
+          raise Exception.new("classifyが想定外です。 / " + row["cls"].to_s)
+        end
         retval.push({:eid => row["EID"], :name => row["name"],
-                      :cls => row["classify"]})
+                      :cls => tmpcls})
       end
     rescue Mysql2::Error => e
+      reterr = e.message
+    rescue Exception => e
       reterr = e.message
     ensure
       mysqlClient.close unless mysqlClient.nil?
