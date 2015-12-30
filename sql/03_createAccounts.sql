@@ -1,9 +1,9 @@
-create table Accounts (
+create table accounts (
        AID bigint auto_increment primary key,
        name varchar(20),
        isCard bit(1) not null default b'0',
        UID varchar(8),
-       balance bigint,
+       balance bigint unsigned,
        adddate datetime,
        editdate datetime
 );

@@ -107,6 +107,26 @@ class CgiUser < ModelMaster
     return {:ulist => retval, :iserr => iserr, :errstr => errstr}
   end
 
+  def self.isExist?(uid)
+    retval = false
+
+    if uid.is_a?(String)
+      begin
+        mysqlClient = getMysqlClient
+        queryStr = "select 1 from cgiUsers where UID = '#{uid.to_s}'"
+        rsltset = mysqlClient.query(queryStr)
+
+        retval = (rsltset.size > 0)
+      rescue Mysql2::Error => e
+        # no return error message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
+    return retval
+  end
+
 =begin
   def self.getUser(uid)
     begin

@@ -16,6 +16,10 @@ class HtmlUtil
 
   URLROOT = "/accmgr"
 
+  REGDTFMT = "%Y-%m-%d %H:%M:%S" # regular datetime format
+  REGDFMT1 = "%Y-%m-%d" # regular date format (used in datetime)
+  REGDFMT2 = "%Y/%m/%d" # regular date format (used in datetime)
+
   def self.htmlHeader
     ret = <<-HTML
 <!DOCTYPE html>
@@ -92,23 +96,6 @@ class HtmlUtil
     return CGI.unescapeHTML(str)
   end
 
-  def self.getToday
-    return DateTime.now
-  end
-
-  def self.fmtDateTime datetime
-    #return (datetime-Rational(9,24)).strftime("%Y-%m-%d %H:%M:%S")
-    return datetime.strftime("%Y-%m-%d %H:%M:%S")
-  end
-
-  def self.fmtDate date
-    return date.to_s
-  end
-
-  def self.fmtTime datetime
-    return datetime.strftime("%H:%M:%S")
-  end
-
   def self.getUserSel (uid = nil)
     uHash = CgiUser.getUserList
     userSel = ""
@@ -154,15 +141,7 @@ class HtmlUtil
     return retstr
   end
 
-  def self.parseDateTime date
-    return (date+Rational(9,24))
-    # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))
-  end
-
-  def self.parseDate str
-    return Date.parse(str, "%Y-%m-%d")
-  end
-
+## return select box of date
   def self.createYearSel sel=0,from=-1,to=1
     # year sel : 入力日とその前後1年分の年数を表示する。デフォルトは当年。
     today = Time.now
@@ -208,8 +187,62 @@ class HtmlUtil
     return dateSel
   end
 
+## date utilities
+  # create
+  def self.getDtToday
+    return DateTime.now
+  end
+  def self.mkDt y,m,d
+    return DateTime.new(y,m,d)
+  end
+
+  # cast from datetime to string (DB -> Str, DateTime -> DB(str))
+  def self.fmtDtToStr dt
+    return dt.strftime(REGDTFMT)
+  end
+
+  # cast from string to datetime
+  def self.fmtStrToDt str
+    retval = nil
+    arr = [REGDTFMT, REGDFMT1, REGDFMT2]
+    arr.each do |fmt|
+      begin
+        retval = DateTime.strptime(str,fmt)
+        break
+      rescue ArgumentError
+      end
+    end
+    return retval
+  end
+
 ## ===================================================================
 =begin # no use
+
+  def self.getToday
+    return DateTime.now
+  end
+
+  def self.fmtDateTime datetime
+    #return (datetime-Rational(9,24)).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.strftime("%Y-%m-%d %H:%M:%S")
+  end
+
+  def self.fmtDate date
+    return date.to_s
+  end
+
+  def self.fmtTime datetime
+    return datetime.strftime("%H:%M:%S")
+  end
+
+  def self.parseDateTime date
+    return (date+Rational(9,24))
+    # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))
+  end
+
+  def self.parseDate str
+    return Date.parse(str, "%Y-%m-%d")
+  end
 
   def self.createDate y,m,d
     return Date.new(y,m,d)

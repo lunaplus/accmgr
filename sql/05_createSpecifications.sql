@@ -5,5 +5,5 @@ create table specifications (
        withdrawFrom bigint,
        paymentTo bigint,
        amount bigint,
-       paymentMonth datetime
+       paymentMonth int
 );

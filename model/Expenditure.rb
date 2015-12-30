@@ -45,14 +45,14 @@ class Expenditure < ModelMaster
   end
   private_class_method :clsfyToDbVal
 
-  def self.insExp(expName, clsfy)
+  def self.ins(expName, clsfy)
     retval = false
     reterr = nil
     begin
       if expName.nil? or (not expName.instance_of?(String)) or
           expName.length < 1 or expName.length > C_MAXNAMELEN
         reterr = C_EXPNAMEERR
-      elsif (not clsfy.instance_of?(Fixnum)) or clsfy < C_IN or clsfy > C_MOVE
+      elsif (not clsfy.is_a?(Integer)) or clsfy < C_IN or clsfy > C_MOVE
         reterr = C_CLASSIFYERR
       else
         tmpcls = clsfyToDbVal(clsfy)
@@ -80,11 +80,11 @@ class Expenditure < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.updExp(eid, expName=nil, clsfy=nil)
+  def self.upd(eid, expName=nil, clsfy=nil)
     retval = false
     reterr = nil
     begin
-      if eid.nil? or (not eid.instance_of?(Fixnum))
+      if eid.nil? or (not eid.is_a?(Integer))
         reterr = C_EIDERR
       elsif expName.nil? and clsfy.nil?
         reterr = "費目名または収支区分のいずれか１つ以上指定してください。"
@@ -93,7 +93,7 @@ class Expenditure < ModelMaster
               expName.length < 1 or expName.length > C_MAXNAMELEN)
         reterr = C_EXPNAMEERR
       elsif (not clsfy.nil?) and
-          ((not clsfy.instance_of?(Fixnum)) or clsfy < C_IN or clsfy > C_MOVE)
+          ((not clsfy.is_a?(Integer)) or clsfy < C_IN or clsfy > C_MOVE)
         reterr = C_CLASSIFYERR
       else
         unless clsfy.nil?
@@ -128,11 +128,11 @@ class Expenditure < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.delExp(eid)
+  def self.del(eid)
     retval = false
     reterr = nil
     begin
-      if eid.nil? or (not eid.instance_of?(Fixnum))
+      if eid.nil? or (not eid.is_a?(Integer))
         reterr = C_EIDERR
       else
         queryStr = " delete from expenditures where EID = #{eid.to_s} "
@@ -149,7 +149,7 @@ class Expenditure < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.listExp
+  def self.list
     retval = Array.new
     reterr = nil
     begin
@@ -180,5 +180,25 @@ class Expenditure < ModelMaster
       mysqlClient.close unless mysqlClient.nil?
     end
     return {:retval => retval, :err => reterr}
+  end
+
+  def self.isExist?(eid)
+    retval = false
+
+    if eid.is_a?(Integer)
+      begin
+        mysqlClient = getMysqlClient
+        queryStr = "select 1 from expenditures where EID = #{eid.to_s}"
+        rsltset = mysqlClient.query(queryStr)
+
+        retval = (rsltset.size > 0)
+      rescue Mysql2::Error => e
+        # no return error message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
+    return retval
   end
 end
