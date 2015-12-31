@@ -49,9 +49,8 @@ class MainController
     expmv = args[0]["expmv"][0].to_i
     wfrom = (args[0]["withdrawFrom"][0]).to_i
     pto = (args[0]["paymentTo"][0]).to_i
-    amounts = (args[0]["amounts"][0]).to_i
+    amounts = (args[0]["amounts"][0]).gsub(',','').to_i
     pmonth = (args[0]["payMonth"][0]).to_i
-    pmonth = nil if pmonth == 0
 
     wpd = HtmlUtil.mkDt year,month,date
 
@@ -69,6 +68,7 @@ class MainController
       pto = nil
       wfrom = nil
     end
+    pmonth = nil if pmonth == 0
 
     rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
                                 wfrom, pto, amounts, pmonth)

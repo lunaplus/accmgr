@@ -1,3 +1,15 @@
+function onfocusAmounts(){
+    document.getElementById("amounts").value =
+        document.getElementById("amounts").value.replace(/,/g, '');
+}
+
+function onblurAmounts(){
+    document.getElementById("amounts").value =
+        document.getElementById("amounts").value
+          .replace(/[^\d]/g, '')
+          .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+}
+
 function onchgKinds(){
     var wpkw = document.getElementById("wpkw")
     var wpkp = document.getElementById("wpkp")
@@ -24,6 +36,9 @@ function init(){
     document.getElementById("wpkw").onchange = onchgKinds;
     document.getElementById("wpkp").onchange = onchgKinds;
     document.getElementById("wpkt").onchange = onchgKinds;
+
+    document.getElementById("amounts").onfocus = onfocusAmounts;
+    document.getElementById("amounts").onblur = onblurAmounts;
 
     document.getElementById("wpkp").checked = true;
     onchgKinds();
