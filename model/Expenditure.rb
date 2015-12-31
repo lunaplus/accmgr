@@ -149,35 +149,48 @@ class Expenditure < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.list
+  def self.list arg=nil
     retval = Array.new
     reterr = nil
-    begin
-      queryStr =
-        " select EID, name, classify+0 as cls from expenditures order by EID "
-      mysqlClient = getMysqlClient
-      rsltSet = mysqlClient.query(queryStr)
 
-      rsltSet.each do |row|
-        case row["cls"]
-        when C_DBIN
-          tmpcls = C_IN
-        when C_DBOUT
-          tmpcls = C_OUT
-        when nil
-          tmpcls = C_MOVE
+    tmpcls = (arg.nil? ? {:err => false} : clsfyToDbVal(arg))
+    unless tmpcls[:err]
+      queryStr =
+        " select EID, name, classify+0 as cls from expenditures "
+      unless arg.nil?
+        queryStr += " where classify "
+        if arg == C_MOVE
+          queryStr += " is " + tmpcls[:retval]
         else
-          raise Exception.new("classifyが想定外です。 / " + row["cls"].to_s)
+          queryStr += " = " + tmpcls[:retval]
         end
-        retval.push({:eid => row["EID"], :name => row["name"],
-                      :cls => tmpcls})
       end
-    rescue Mysql2::Error => e
-      reterr = e.message
-    rescue Exception => e
-      reterr = e.message
-    ensure
-      mysqlClient.close unless mysqlClient.nil?
+      queryStr += " order by EID "
+      begin
+        mysqlClient = getMysqlClient
+        rsltSet = mysqlClient.query(queryStr)
+        
+        rsltSet.each do |row|
+          case row["cls"]
+          when C_DBIN
+            tmpcls = C_IN
+          when C_DBOUT
+            tmpcls = C_OUT
+          when nil
+            tmpcls = C_MOVE
+          else
+          raise Exception.new("classifyが想定外です。 / " + row["cls"].to_s)
+          end
+          retval.push({:eid => row["EID"], :name => row["name"],
+                        :cls => tmpcls})
+        end
+      rescue Mysql2::Error => e
+        reterr = e.message
+      rescue Exception => e
+        reterr = e.message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
     end
     return {:retval => retval, :err => reterr}
   end

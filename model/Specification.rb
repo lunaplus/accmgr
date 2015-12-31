@@ -57,7 +57,7 @@ class Specification < ModelMaster
           end
         end
         if (not pmTo.nil?)
-          if not Account.isExist?(wdFrom)
+          if not Account.isExist?(pmTo)
             # pmTo as Integer / must exist at Accounts
             tmperr.push("登録されていない支払い口座は指定できません。")
           end
@@ -150,19 +150,25 @@ class Specification < ModelMaster
       begin
         mysqlClient = getMysqlClient
         queryStr = <<-SQL
-          insert into specifications(wpdate, EID,
-            withdrawFrom, paymentTo, amount, paymentMonth
-          )values(
+          insert into specifications(wpdate, EID, amount
         SQL
+        queryStr += " , withdrawFrom " unless wdFrom.nil?
+        queryStr += " , paymentTo " unless pmTo.nil?
+        queryStr += " , paymentMonth" unless pmonth.nil?
+        queryStr += " )values( "
         wpddt = HtmlUtil.fmtDtToStr (HtmlUtil.fmtStrToDt wpd)
-        queryStr += "'#{wpddt}', #{eid.to_s}, #{wdFrom.to_s}, #{pmTo.to_s}, " +
-          "#{amount.to_s}, #{paymentMonth.to_s} )"
+        tmparr = Array.new
+        tmparr.push("'#{wpddt}'").push(eid.to_s).push(amount.to_s)
+        tmparr.push(wdFrom.to_s) unless wdFrom.nil?
+        tmparr.push(pmTo.to_s) unless pmTo.nil?
+        tmparr.push(pmonth.to_s) unless pmonth.nil?
+        queryStr += tmparr.join(",") + ")"
 
         mysqlClient.query(queryStr)
 
         retval = (mysqlClient.affected_rows > 0)
       rescue Mysql2::Error => e
-        reterr = [e.message]
+        reterr = [e.message, queryStr]
       ensure
         mysqlClient.close unless mysqlClient.nil?
       end

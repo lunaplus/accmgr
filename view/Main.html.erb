@@ -13,6 +13,9 @@
     </li>
   </ul>
 </div>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
 <div id="inputarea">
   <form action="<%= actionUrl %>" method="post" accept-charset="UTF-8"
 	autocomplete="off" name="inputarea">
@@ -24,25 +27,36 @@
       <select name="datesel"><%= datesel %></select>
     </div>
     <div id="wpkind">
-      <input type="radio" name="wpkinds" value="withdraw">収入<br>
-      <input type="radio" name="wpkinds" value="payment">支出<br>
-      <input type="radio" name="wpkinds" value="accounttransfer">口座移動<br>
+      <input type="radio" name="wpkinds" id="wpkw" value="withdraw">収入
+      <input type="radio" name="wpkinds" id="wpkp" value="payment">支出
+      <input type="radio" name="wpkinds" id="wpkt"
+	     value="accounttransfer">口座移動
     </div>
     <div id="expenditure">
       費目
-      <select name="expenditures">
-	<%= expsel %>
+      <select name="expin" id="expin">
+	<%= inexpsel %>
+      </select>
+      <select name="expout" id="expout">
+	<%= outexpsel %>
+      </select>
+      <select name="expmv" id="expmv">
+	<%= mvexpsel %>
       </select>
     </div>
     <div id="account">
-      支払区分
-      <select name="withdrawFrom">
-	<%= wFromsel %>
-      </select><br>
-      収入区分
-      <select name="paymentTo">
-	<%= pTosel %>
-      </select>
+      <div id="wacc">
+	収入区分
+	<select name="withdrawFrom">
+	  <%= wFromsel %>
+	</select>
+      </div>
+      <div id="pacc">
+	支払区分
+	<select name="paymentTo">
+	  <%= pTosel %>
+	</select>
+      </div>
     </div>
     <div id="amount">
       金額
@@ -59,36 +73,7 @@
       口座残額
       <span id="accremamount">-</span>円
     </div>
+    <input type="submit" name="登録" text="登録">
   </form>
 </div>
-<!--
-<div id="chatarea">
-  <div id="loginarea">
-    <span id="errmsg"></span>
-    <div id="roomchoice">
-      ルーム選択
-      <input type="radio" name="room" value="create">
-      <input type="text" id="newroom" size="20" maxlength="15" value="">
-      <input type="radio" name="room" value="login">
-    </div>
-    <div id="roompass">
-      ルームパスワード
-      <input type="password" id="roompwd" size="20" value="">
-      <input type="button" id="roomlogin" value="入室">
-      <input type="button" id="roomlogout" value="退室">
-    </div>
-  </div>
-  <div id="inputarea">
-    送信メッセージ:
-    <textarea id="message" placeholder="Shift+Enterで送信"
-	      rows="5" cols="60"></textarea>
-    <input type="button" id="buttonSend"  value="送信">
-    <input type="hidden" id="login" value="<%= login %>">
-    <input type="hidden" id="username" value="<%= username %>">
-  </div>
-  <div id="reciveArea">
-    受信データ
-    <ul id="reciveDataSpace"></ul>
-  </div>
-</div>
--->
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>main.js'></script>

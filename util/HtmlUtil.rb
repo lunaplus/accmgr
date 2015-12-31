@@ -4,6 +4,8 @@ require 'date'
 require 'digest/sha2'
 require 'cgi'
 require_relative '../model/CgiUser'
+require_relative '../model/Expenditure'
+require_relative '../model/Account'
 
 class HtmlUtil
   LOGINID = "loginid"
@@ -185,6 +187,36 @@ class HtmlUtil
       dateSel += ">#{i}</option>\n"
     end
     return dateSel
+  end
+
+## return select box of Expenditure
+  def self.expSel arg=nil
+    explist = Expenditure.list arg
+    if not explist[:err].nil?
+      retval = "<option>" + explist[:err] + "</option>"
+    else
+      retval = "<option value=\"\"></option>"
+      explist[:retval].each do |elm|
+        retval += "<option value=\"#{elm[:eid]}\">"
+        retval += "#{elm[:name]}</option>"
+      end
+    end
+
+    return retval
+  end
+
+  def self.accSel
+    acclist = Account.list
+    if not acclist[:err].nil?
+      retval = "<option>" + acclist[:err] + "</option>"
+    else
+      retval = "<option value=\"\"></option>"
+      acclist[:retval].each do |elm|
+        retval += "<option value=\"#{elm[:AID]}\">"
+        retval += "#{elm[:name]}</option>"
+      end
+    end
+    return retval
   end
 
 ## date utilities
