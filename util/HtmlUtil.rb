@@ -15,12 +15,22 @@ class HtmlUtil
   LoginCtrlName = "login"
   MenuCtrlName = "menu"
   MainCtrlName = "main"
+  AccCtrlName = "acc"
 
   URLROOT = "/accmgr"
 
   REGDTFMT = "%Y-%m-%d %H:%M:%S" # regular datetime format
   REGDFMT1 = "%Y-%m-%d" # regular date format (used in datetime)
   REGDFMT2 = "%Y/%m/%d" # regular date format (used in datetime)
+
+  CHKEDIT = "chkEdit"
+  HIDAID = "hidAID"
+  TXTNM = "txtName"
+  CHKISCD = "chkIscard"
+  CHKISCDCHK = CHKISCD + "_chk"
+  SELUID = "selUID"
+  TXTBL = "txtBalance"
+  LBLDT = "lblDate"
 
   def self.htmlHeader
     ret = <<-HTML
@@ -83,6 +93,10 @@ class HtmlUtil
     return (createUrl MainCtrlName,act)
   end
 
+  def self.getAccUrl act="index"
+    return (createUrl AccCtrlName,act)
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
@@ -119,13 +133,16 @@ class HtmlUtil
   def self.getMenuList(now = nil)
     mainUrl = HtmlUtil.getMainUrl
     personMgmtUrl = HtmlUtil.getMenuUrl("person")
+    accmgmtUrl = HtmlUtil.getAccUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
+    accmgmtUrl = "#" if HtmlUtil.getAccUrl == now
 
     menuList = <<-MENU
         <li><a href="#{mainUrl}">メイン画面へ</a></li>
 	<li><a href="#{personMgmtUrl}">自分の管理</a></li>
+        <li><a href="#{accmgmtUrl}">口座管理画面へ</a></li>
     MENU
     return menuList
   end
@@ -216,6 +233,131 @@ class HtmlUtil
         retval += "#{elm[:name]}</option>"
       end
     end
+    return retval
+  end
+
+  def self.usrSel uid=nil
+    usrlist = CgiUser.getUserList
+    retval = ""
+
+    if usrlist[:iserr]
+      retval += "<option>" + usrlist[:errstr] + "</option>"
+    else
+      retval += "<option value=\"\"></option>"
+      usrlist[:ulist].each do |elm|
+        retval += "<option value\"#{elm[:uid]}\""
+        retval += " selected" if (not uid.nil?) and uid=elm[:uid]
+        retval += ">#{elm[:name]}</option>"
+      end
+    end
+
+    return retval
+  end
+
+  def self.accTblList trid, tdid
+    acclist = Account.list
+    retval = ""
+
+    if not acclist[:err].nil?
+      retval = "<tr><td>" + acclist[:err] + "</td></tr>"
+    else
+      selusr = usrSel
+      retval += <<-HEAD
+        <tr>
+          <th>編集</th>
+          <th>口座名</th>
+          <th>カード区分</th>
+          <th>所有者</th>
+          <th>残高</th>
+          <th>追加・更新日</th>
+        </tr>
+        <tr id="#{trid}0">
+          <td id="#{tdid+CHKEDIT}0">
+            <input type="checkbox" name="#{CHKEDIT}"
+                   id="#{CHKEDIT}0">
+            <input type="hidden" name="#{HIDAID}"
+                   disabled="disabled"
+                   id="#{HIDAID}0" value=""></td>
+          <td id="#{tdid+TXTNM}0">
+            <input type="textbox" name="#{TXTNM}"
+                   disabled="disabled" id="#{TXTNM}0" value=""></td>
+          <td id="#{tdid+CHKISCD}0">
+            <input type="checkbox" name="#{CHKISCDCHK}"
+                   disabled="disabled" id="#{CHKISCDCHK}0"></td>
+            <input type="hidden" name="#{CHKISCD}"
+                   disabled="disabled"
+                   id="#{CHKISCD}0" value="off"></td>
+          <td id="#{tdid+SELUID}0">
+            <select name="#{SELUID}" id="#{SELUID}0" disabled="disabled">
+            #{selusr}
+            </select></td>
+          <td id="#{tdid+TXTBL}0">
+            <input type="textbox" name="#{TXTBL}" id="#{TXTBL}0"
+                   disabled="disabled" value=""></td>
+          <td id="#{tdid+LBLDT}0"></td>
+        </tr>
+      HEAD
+      0.upto(acclist[:retval].size-1) do |i|
+        row = acclist[:retval][i]
+        j = (i+1).to_s
+        # edit checkbox, ID(hidden)
+        retval += <<-CHK
+        <tr id=\"#{trid+j}>\">
+          <td id="#{tdid+CHKEDIT+j}">
+            <input type="checkbox" name="#{CHKEDIT}"
+                   id="#{CHKEDIT+j}">
+            <input type="hidden" name="#{HIDAID}"
+                   id="#{HIDAID+j}" disabled="disabled"
+                   value="#{row[:AID]}"></td>
+        CHK
+        # name textbox
+        retval+= <<-NAME
+          <td id="#{tdid+TXTNM+j}">
+            <input type="textbox" name="#{TXTNM}"
+                   id="#{TXTNM+j}" disabled="disabled"
+                   value="#{row[:name]}"></td>
+        NAME
+        # iscard chkbox
+        retval += <<-ISCD
+          <td id="#{tdid+CHKISCD+j}">
+            <input type="checkbox" name="#{CHKISCDCHK}"
+                   id="#{CHKISCDCHK+j}" disabled="disabled"
+        ISCD
+        retval += "          checked=\"checked\"" if row[:iscard]
+        retval += ">"
+        retval += <<-ISCD2
+            <input type="hidden" name="#{CHKISCD}"
+                   id="#{CHKISCD+j}" disabled="disabled"
+        ISCD2
+        retval += (row[:iscard] ? " value=\"on\">" : " value=\"off\">")
+        retval += "</td>"
+
+        # UID, uname selectbox
+        selusr = usrSel(row[:UID])
+        retval += <<-USR
+          <td id="#{tdid+SELUID+j}">
+            <select name="#{SELUID}" id="#{SELUID+j}" disabled="disabled">
+            #{selusr}
+          </select></td>
+        USR
+        # balance textbox(number)
+        retval += <<-BALANCE
+          <td id="#{tdid+TXTBL+j}">
+            <input type="textbox" name="#{TXTBL}" id="#{TXTBL+j}"
+                   disabled="disabled"
+                   value="#{row[:balance].to_s}">
+          </td>
+        BALANCE
+        # adddate,editdate label
+        ldate = fmtDtToStr(row[:adddate])
+        ldate += "<br>" + fmtDtToStr(row[:editdate])
+        retval += <<-DATE
+          <td id="#{tdid+LBLDT+j}">#{ldate}</td>
+        DATE
+        retval += "</tr>"
+      end
+    end
+
     return retval
   end
 
