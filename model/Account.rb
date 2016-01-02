@@ -83,7 +83,7 @@ class Account < ModelMaster
         mysqlClient.query(queryStr)
         retval = (mysqlClient.affected_rows > 0)
       rescue Mysql2::Error => e
-        reterr = e.message
+        reterr = [e.message]
       ensure
         mysqlClient.close unless mysqlClient.nil?
       end
@@ -103,6 +103,7 @@ class Account < ModelMaster
                accounts.UID as UID, cgiUsers.name as uname, balance,
                adddate, editdate
           from accounts left join cgiUsers on accounts.UID = cgiUsers.UID
+         order by AID
       SQL
       rsltset = mysqlClient.query(queryStr)
 
@@ -160,7 +161,7 @@ class Account < ModelMaster
 
           retval = (mysqlClient.affected_rows > 0)
         rescue Mysql2::Error => e
-          reterr = e.message
+          reterr = [e.message]
         ensure
           mysqlClient.close unless mysqlClient.nil?
         end
