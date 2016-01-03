@@ -24,10 +24,10 @@ function onchgKinds(){
 	(wpkt.checked == true ? "inline" : "none");
 
     // withdraw-payment Accounts
-    document.getElementById("wacc").style.display =
+    document.getElementById("pacc").style.display =
 	(wpkw.checked == true || wpkt.checked == true ?
 	 "inline" : "none");
-    document.getElementById("pacc").style.display =
+    document.getElementById("wacc").style.display =
 	(wpkp.checked == true || wpkt.checked == true ?
 	 "inline" : "none");
 }

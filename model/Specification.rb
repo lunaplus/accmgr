@@ -53,13 +53,13 @@ class Specification < ModelMaster
         if (not wdFrom.nil?)
           if not Account.isExist?(wdFrom)
             # wdFrom as Integer / must exist at Accounts
-            tmperr.push("登録されていない引落し口座は指定できません。")
+            tmperr.push("登録されていない支払い元は指定できません。")
           end
         end
         if (not pmTo.nil?)
           if not Account.isExist?(pmTo)
             # pmTo as Integer / must exist at Accounts
-            tmperr.push("登録されていない支払い口座は指定できません。")
+            tmperr.push("登録されていない支払い先は指定できません。")
           end
         end
       end

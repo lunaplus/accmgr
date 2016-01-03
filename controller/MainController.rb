@@ -3,6 +3,7 @@
 require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
 require_relative '../model/Specification'
+require_relative '../model/Account'
 require 'erb'
 require 'pathname'
 
@@ -57,10 +58,10 @@ class MainController
     case wpkinds
     when "withdraw" then
       exp = expin
-      pto = nil
+      wfrom = nil
     when "payment" then
       exp = expout
-      wfrom = nil
+      pto = nil
     when "accounttransfer" then
       exp = expmv
     else
@@ -70,10 +71,23 @@ class MainController
     end
     pmonth = nil if pmonth == 0
 
-    rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                wfrom, pto, amounts, pmonth)
+    tmpupderr = Array.new
+    if (not wfrom.nil?)
+      rethash = Account.addBalance(wfrom, -amounts)
+      tmpupderr += [rethash[:err]] unless rethash[:err].nil?
+    end
+    if tmpupderr.empty?
+      rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
+                                  wfrom, pto, amounts, pmonth)
+      tmpupderr += rethash[:err] unless rethash[:err].nil?
+    end
+    if tmpupderr.empty? and (not pto.nil?)
+      rethash = Account.addBalance(pto, amounts)
+      tmpupderr += [rethash[:err]] unless rethash[:err].nil?
+    end
+
     session[UPDERR] =
-      (HtmlUtil.arrToHtmlList rethash[:err],false) unless rethash[:retval]
+      (HtmlUtil.arrToHtmlList tmpupderr,false) unless tmpupderr.empty?
 
     return "", true, (HtmlUtil.getMainUrl)
   end

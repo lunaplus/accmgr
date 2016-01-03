@@ -171,6 +171,37 @@ class Account < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
+  def self.addBalance(aid, add)
+    retval = false
+    reterr = nil
+
+    if not aid.is_a?(Integer)
+      reterr = "口座IDの型が不正です。"
+    else
+      if add.nil? or (not add.is_a?(Integer))
+        reterr = "口座残高への加減算は正数で入力してください。"
+      else
+        begin
+          mysqlClient = getMysqlClient
+          queryStr = <<-SQL
+            update accounts set
+                   balance = balance + #{add.to_s}
+             where AID = #{aid.to_s}
+          SQL
+          mysqlClient.query(queryStr)
+
+          retval = (mysqlClient.affected_rows > 0)
+        rescue Mysql2::Error => e
+          reterr = e.message
+        ensure
+          mysqlClient.close unless mysqlClient.nil?
+        end
+      end
+    end
+
+    return {:retval => retval, :err => reterr}
+  end
+
   def self.isExist? aid
     retval = false
 

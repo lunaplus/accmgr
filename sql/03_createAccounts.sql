@@ -3,7 +3,7 @@ create table accounts (
        name varchar(20),
        isCard bit(1) not null default b'0',
        UID varchar(8),
-       balance bigint unsigned,
+       balance bigint,
        adddate datetime,
        editdate datetime
 );
