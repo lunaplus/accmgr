@@ -38,6 +38,7 @@ class HtmlUtil
 <html>
   <head>
     <meta charset-='UTF-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
     <link rel="stylesheet" type="text/css" href="#{URLROOT}/css/accmgr.css">
   </head>
   <body>
