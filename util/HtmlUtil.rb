@@ -142,15 +142,18 @@ class HtmlUtil
     mainUrl = HtmlUtil.getMainUrl
     personMgmtUrl = HtmlUtil.getMenuUrl("person")
     accmgmtUrl = HtmlUtil.getAccUrl
+    expmgmtUrl = HtmlUtil.getExpUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
     accmgmtUrl = "#" if HtmlUtil.getAccUrl == now
+    expmgmtUrl = "#" if HtmlUtil.getExpUrl == now
 
     menuList = <<-MENU
         <li><a href="#{mainUrl}">メイン画面へ</a></li>
 	<li><a href="#{personMgmtUrl}">自分の管理</a></li>
         <li><a href="#{accmgmtUrl}">口座管理画面へ</a></li>
+        <li><a href="#{expmgmtUrl}">費目管理画面へ</a></li>
     MENU
     return menuList
   end
