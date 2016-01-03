@@ -248,7 +248,7 @@ class HtmlUtil
       usrlist[:ulist].each do |elm|
         retval += "<option value\"#{elm[:uid]}\""
         retval += " selected" if (not uid.nil?) and uid=elm[:uid]
-        retval += ">#{elm[:name]}</option>"
+        retval += ">#{elm[:uid]}</option>"
       end
     end
 
