@@ -1,0 +1,28 @@
+<div id="titles">
+  <h2>費目管理画面</h2>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<div id="menuarea">
+  <ul id="normal" class="dropmenu">
+    <li><a href="#">メニュー▼</a>
+      <ul>
+	<%= menuList %>
+      </ul>
+    </li>
+  </ul>
+</div>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
+<div id="inputarea">
+  <form action="<%= actionUrl %>" method="post" accept-charset="UTF-8"
+	autocomplete="off" name="inputarea">
+    <table id="inputtable">
+      <%= exptbllist %>
+    </table>
+    <input type="submit" id="submit" name="submit" value="登録">
+  </form>
+</div>
+<script src='<%= HtmlUtil::URLROOT %>/js/exp.js'></script>

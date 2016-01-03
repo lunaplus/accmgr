@@ -16,6 +16,7 @@ class HtmlUtil
   MenuCtrlName = "menu"
   MainCtrlName = "main"
   AccCtrlName = "acc"
+  ExpCtrlName = "exp"
 
   URLROOT = "/accmgr"
 
@@ -25,10 +26,12 @@ class HtmlUtil
 
   CHKEDIT = "chkEdit"
   HIDAID = "hidAID"
+  HIDEID = "hidEID"
   TXTNM = "txtName"
   CHKISCD = "chkIscard"
   CHKISCDCHK = CHKISCD + "_chk"
   SELUID = "selUID"
+  SELCLSFY = "selClsfy"
   TXTBL = "txtBalance"
   LBLDT = "lblDate"
 
@@ -96,6 +99,10 @@ class HtmlUtil
 
   def self.getAccUrl act="index"
     return (createUrl AccCtrlName,act)
+  end
+
+  def self.getExpUrl act="index"
+    return (createUrl ExpCtrlName,act)
   end
 
   def self.createUrl ctrl,act="",arg=nil
@@ -356,6 +363,90 @@ class HtmlUtil
           <td id="#{tdid+LBLDT+j}">#{ldate}</td>
         DATE
         retval += "</tr>"
+      end
+    end
+
+    return retval
+  end
+
+  def self.expClsfySel cls=nil
+    retval = <<-OPT
+        <option value=""></option>
+    OPT
+    retval += "<option value=\"#{Expenditure::C_IN}\""
+    retval += " selected " if ((not cls.nil?) and cls==Expenditure::C_IN)
+    retval += ">#{Expenditure::C_IN}(IN)</option>"
+
+    retval += "<option value=\"#{Expenditure::C_OUT}\""
+    retval += " selected " if ((not cls.nil?) and cls==Expenditure::C_OUT)
+    retval += ">#{Expenditure::C_OUT}(OUT)</option>"
+
+    retval += "<option value=\"#{Expenditure::C_MOVE}\""
+    retval += " selected " if ((not cls.nil?) and cls==Expenditure::C_MOVE)
+    retval += ">#{Expenditure::C_MOVE}(MOVE)</option>"
+
+    return retval
+  end
+
+  def self.expTblList trid, tdid
+    retval = ""
+    explist = Expenditure.list
+
+    unless explist[:err].nil?
+      retval = "<tr><td>" + explist[:err] + "</td></tr>"
+    else
+      selclsfy = expClsfySel
+      retval += <<-HEAD
+        <tr>
+          <th>編集</th>
+          <th>費目名</th>
+          <th>費目区分</th>
+        </tr>
+        <tr id="#{trid}0">
+          <td id="#{tdid+CHKEDIT}0">
+            <input type="checkbox" name="#{CHKEDIT}"
+                   id="#{CHKEDIT}0">
+            <input type="hidden" name="#{HIDEID}"
+                   disabled="disabled"
+                   id="#{HIDEID}0" value=""></td>
+          <td id="#{tdid+TXTNM}0">
+            <input type="textbox" name="#{TXTNM}"
+                   disabled="disabled" id="#{TXTNM}0" value=""></td>
+          <td id="#{tdid+SELCLSFY}0">
+            <select name="#{SELCLSFY}" id="#{SELCLSFY}0" disabled="disabled">
+            #{selclsfy}
+            </select></td>
+        </tr>
+      HEAD
+      0.upto(explist[:retval].size-1) do |i|
+        row = explist[:retval][i]
+        j = (i+1).to_s
+        # edit / EID(hidden)
+        retval += <<-CHK
+        <tr id=\"#{trid+j}>\">
+          <td id="#{tdid+CHKEDIT+j}">
+            <input type="checkbox" name="#{CHKEDIT}"
+                   id="#{CHKEDIT+j}">
+            <input type="hidden" name="#{HIDEID}"
+                   id="#{HIDEID+j}" disabled="disabled"
+                   value="#{row[:eid]}"></td>
+        CHK
+        # name
+        retval+= <<-NAME
+          <td id="#{tdid+TXTNM+j}">
+            <input type="textbox" name="#{TXTNM}"
+                   id="#{TXTNM+j}" disabled="disabled"
+                   value="#{row[:name]}"></td>
+        NAME
+        # classify
+        selclsfy = expClsfySel(row[:cls])
+        retval += <<-CLSFY
+          <td id="#{tdid+SELCLSFY+j}">
+            <select name="#{SELCLSFY}" id="#{SELCLSFY+j}"
+                    disabled="disabled">
+            #{selclsfy}
+          </select></td></tr>
+        CLSFY
       end
     end
 

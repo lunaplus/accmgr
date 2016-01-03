@@ -66,6 +66,9 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::MenuCtrlName
       require_relative './controller/MenuController'
       ctrler = MenuController.new
+    when HtmlUtil::ExpCtrlName
+      require_relative './controller/ExpenditureController'
+      ctrler = ExpenditureController.new
     when HtmlUtil::AccCtrlName
       require_relative './controller/AccountMgrController'
       ctrler = AccountMgrController.new
