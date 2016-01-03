@@ -51,6 +51,7 @@ class MainController
     wfrom = (args[0]["withdrawFrom"][0]).to_i
     pto = (args[0]["paymentTo"][0]).to_i
     amounts = (args[0]["amounts"][0]).gsub(',','').to_i
+    desc = args[0]["desc"][0]
     pmonth = (args[0]["payMonth"][0]).to_i
 
     wpd = HtmlUtil.mkDt year,month,date
@@ -70,6 +71,7 @@ class MainController
       wfrom = nil
     end
     pmonth = nil if pmonth == 0
+    desc = nil if desc.empty?
 
     tmpupderr = Array.new
     if (not wfrom.nil?)
@@ -78,7 +80,7 @@ class MainController
     end
     if tmpupderr.empty?
       rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                  wfrom, pto, amounts, pmonth)
+                                  wfrom, pto, amounts, pmonth, desc)
       tmpupderr += rethash[:err] unless rethash[:err].nil?
     end
     if tmpupderr.empty? and (not pto.nil?)

@@ -138,7 +138,7 @@ class Specification < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.ins(wpd, eid, wdFrom, pmTo, amount, pmonth)
+  def self.ins(wpd, eid, wdFrom, pmTo, amount, pmonth, desc)
     retval = false
     reterr = nil
     
@@ -155,6 +155,7 @@ class Specification < ModelMaster
         queryStr += " , withdrawFrom " unless wdFrom.nil?
         queryStr += " , paymentTo " unless pmTo.nil?
         queryStr += " , paymentMonth" unless pmonth.nil?
+        queryStr += " , description " unless desc.nil?
         queryStr += " )values( "
         wpddt = HtmlUtil.fmtDtToStr (HtmlUtil.fmtStrToDt wpd)
         tmparr = Array.new
@@ -162,6 +163,7 @@ class Specification < ModelMaster
         tmparr.push(wdFrom.to_s) unless wdFrom.nil?
         tmparr.push(pmTo.to_s) unless pmTo.nil?
         tmparr.push(pmonth.to_s) unless pmonth.nil?
+        tmparr.push("'#{desc}'") unless desc.nil?
         queryStr += tmparr.join(",") + ")"
 
         mysqlClient.query(queryStr)
