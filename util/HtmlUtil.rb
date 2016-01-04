@@ -17,6 +17,7 @@ class HtmlUtil
   MainCtrlName = "main"
   AccCtrlName = "acc"
   ExpCtrlName = "exp"
+  StatCtrlName = "stscs"
 
   URLROOT = "/accmgr"
 
@@ -105,6 +106,10 @@ class HtmlUtil
     return (createUrl ExpCtrlName,act)
   end
 
+  def self.getStatUrl act="index"
+    return (createUrl StatCtrlName,act)
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
@@ -143,17 +148,29 @@ class HtmlUtil
     personMgmtUrl = HtmlUtil.getMenuUrl("person")
     accmgmtUrl = HtmlUtil.getAccUrl
     expmgmtUrl = HtmlUtil.getExpUrl
+    statUrl = HtmlUtil.getStatUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
     accmgmtUrl = "#" if HtmlUtil.getAccUrl == now
     expmgmtUrl = "#" if HtmlUtil.getExpUrl == now
+    statUrl = "#" if HtmlUtil.getStatUrl == now
 
     menuList = <<-MENU
+<div id="menuarea">
+  <ul id="normal" class="dropmenu">
+    <li><label for="chkmenu">▼メニュー<label>
+      <input type="checkbox" id="chkmenu">
+      <ul>
         <li><a href="#{mainUrl}">メイン画面へ</a></li>
 	<li><a href="#{personMgmtUrl}">自分の管理</a></li>
         <li><a href="#{accmgmtUrl}">口座管理画面へ</a></li>
         <li><a href="#{expmgmtUrl}">費目管理画面へ</a></li>
+        <li><a href="#{statUrl}">統計画面へ</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
     MENU
     return menuList
   end

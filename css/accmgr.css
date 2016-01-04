@@ -13,6 +13,7 @@
 }
 /* for dropdown menu start */
 .dropmenu{
+    background: #cccccc;
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -23,6 +24,9 @@
 }
 .dropmenu:after{
     clear: both;
+}
+.dropmenu #chkmenu{
+    display: none;
 }
 .dropmenu li{
     position: relative;
@@ -53,7 +57,7 @@
     width: 100%;
 }
 .dropmenu li ul li a{
-    border-top: 1px solid #999999;
+    border: 1px solid #999999;
     text-align: left;
 }
 .dropmenu li:hover > a{
@@ -62,10 +66,10 @@
 .dropmenu li a:hover{
     background: #e0eee0;
 }
-#normal li ul{
+#chkmenu + ul{
     display: none;
 }
-#normal li:hover ul{
+#chkmenu:checked + ul{
     display: block;
 }
 /* for dropdown menu end */

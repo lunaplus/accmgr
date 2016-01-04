@@ -13,6 +13,10 @@ class MenuController
     @viewName = "メニュー画面" if @viewName.nil?
     @menuList = HtmlUtil.getMenuList(HtmlUtil.getMenuUrl) if @menuList.nil?
 
+    login = session[HtmlUtil::LOGINID]
+    username = session[HtmlUtil::LOGINNAME]
+    showname = username + "(" + login + ")"
+
     @contents = "" if @contents.nil?
 
     form = Pathname("view/Menu.html.erb").read(:encoding => Encoding::UTF_8)

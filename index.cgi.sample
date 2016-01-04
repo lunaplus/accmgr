@@ -69,6 +69,9 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::ExpCtrlName
       require_relative './controller/ExpenditureController'
       ctrler = ExpenditureController.new
+    when HtmlUtil::StatCtrlName
+      require_relative './controller/StatisticsController'
+      ctrler = StatisticsController.new
     when HtmlUtil::AccCtrlName
       require_relative './controller/AccountMgrController'
       ctrler = AccountMgrController.new
