@@ -13,7 +13,6 @@
 }
 /* for dropdown menu start */
 .dropmenu{
-    background: #cccccc;
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -25,12 +24,16 @@
 .dropmenu:after{
     clear: both;
 }
+.dropmenu label{
+    background: #cccccc;
+    display: block;
+}
 .dropmenu #chkmenu{
     display: none;
 }
 .dropmenu li{
     position: relative;
-    width: 150px;
+    width: 200px;
     float: left;
     margin: 0;
     padding: 0;
