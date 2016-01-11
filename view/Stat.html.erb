@@ -10,7 +10,7 @@
 </div>
 <div id="inputarea">
   <form name="inputarea" method="post" accept-charset="UTF-8"
-	autocomplete="off">
+	autocomplete="off" action="<%= actionUrl %>">
     <div id="datetime">
       <select name="<%= SELYEAR %>" id="<%= SELYEAR %>">
 	<%= selyear %>
@@ -18,6 +18,13 @@
       <select name="<%= SELMONTH %>" id="<%= SELMONTH %>">
 	<%= selmonth %>
       </select>月の統計
+    </div>
+    <div id="action">
+      <input type="radio" name="action" id="display"
+	     value="display" checked="checked">
+      <label for="display">表示</label>
+      <input type="radio" name="action" id="stats" value="stats">
+      <label for="stats">集計</label>
     </div>
     <div id="target">
       <div id="owner">
@@ -33,15 +40,9 @@
 	</select>
       </div>
     </div>
-    <div id="action">
-      <input type="radio" name="action" id="display"
-	     value="display" checked="checked">
-      <label for="display">表示</label>
-      <input type="radio" name="action" id="stats" value="stats">
-      <label for="stats">集計</label>
-    </div>
     <input type="submit" name="submit" value="実行">
   </form>
 </div>
 <div id="displayarea">
+  <%= displist %>
 </div>

@@ -177,15 +177,60 @@ class HtmlUtil
 
   def self.arrToHtmlList(arr, isOdr)
     retstr = (isOdr ? "<ol>" : "<ul>")
-    if arr.count == 0
-      retstr = "<li>リストアイテムが空です。</li>"
-    else
-      arr.each do |elm|
-        retstr += "<li>" + elm + "</li>" unless elm.nil?
+    if arr.is_a?(Array)
+      if arr.count == 0
+        retstr = "<li>リストアイテムが空です。</li>"
+      else
+        arr.each do |elm|
+          retstr += "<li>" + elm + "</li>" unless elm.nil?
+        end
       end
+    elsif arr.is_a?(String)
+      retstr = "<li>" + arr + "</li>"
+    else
+      retstr = "<li>" + arr.to_s + "</li>"
     end
     retstr += (isOdr ? "</ol>" : "</ul>")
     return retstr
+  end
+
+  def self.fmtStatsList arr
+    inall = "-"
+    outall = "-"
+    spceid = Array.new
+    arr.each do |elm|
+      if elm[:eid]==Statistic::ALLEIDIN
+        inall = elm[:amount].to_currency
+      elsif elm[:eid]==Statistic::ALLEIDOUT
+        outall = elm[:amount].to_currency
+      else
+        spceid.push({:eid => elm[:eid], :amount => elm[:amount].to_currency})
+      end
+    end
+
+    retval = <<-HTML
+    <table id="dispStat">
+      <tr><td>収入計</td>
+      <td align="right">#{inall}</td></tr>
+      <tr><td>支出計</td>
+      <td align="right">#{outall}</td></tr>
+      <tr><td colspan="2">
+        費目別
+        <table id="dispSpc">
+    HTML
+    spceid.each do |row|
+      retval += <<-HTML
+        <tr><td>#{row[:eid]}</td>
+        <td align="right">#{row[:amount]}</td></tr>
+      HTML
+    end
+    retval += <<-HTML
+        </table>
+      </td></tr>
+    </table>
+    HTML
+    
+    return retval
   end
 
 ## return select box of date
@@ -204,16 +249,14 @@ class HtmlUtil
     return retyear
   end
 
-  def self.createMonthSel df=0,dfset=true
+  def self.createMonthSel df,dfset=true
     # month sel : 12ヶ月分全部表示する。デフォルトは当月
-    today = Time.now
     defaultSel = df
-    defaultSel = today.month if df < 1 or df > 12
 
     monthSel = ""
     1.upto(12) do |i|
       monthSel += "<option value=\"#{i}\""
-      monthSel += " selected" if i == defaultSel and dfset
+      monthSel += " selected" if dfset and i == defaultSel
       monthSel += ">#{i}</option>\n"
     end
     return monthSel
@@ -250,15 +293,16 @@ class HtmlUtil
     return retval
   end
 
-  def self.accSel
+  def self.accSel arg=nil
     acclist = Account.list
     if not acclist[:err].nil?
       retval = "<option>" + acclist[:err] + "</option>"
     else
-      retval = "<option value=\"\"></option>"
+      retval = ""
       acclist[:retval].each do |elm|
-        retval += "<option value=\"#{elm[:AID]}\">"
-        retval += "#{elm[:name]}</option>"
+        retval += "<option value=\"#{elm[:AID]}\""
+        retval += " selected " if (not arg.nil?) and elm[:AID]==arg
+        retval += ">#{elm[:name]}</option>"
       end
     end
     return retval

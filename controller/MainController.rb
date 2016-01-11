@@ -20,7 +20,7 @@ class MainController
     actionUrl = HtmlUtil.getMainUrl "update"
 
     yearsel = HtmlUtil.createYearSel 0,-2,2
-    monthsel = HtmlUtil.createMonthSel
+    monthsel = HtmlUtil.createMonthSel (Time.now.month)
     datesel = HtmlUtil.createDateSel
 
     inexpsel = HtmlUtil.expSel Expenditure::C_IN

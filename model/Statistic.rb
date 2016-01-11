@@ -3,6 +3,8 @@
 require_relative '../util/HtmlUtil'
 require_relative './ModelMaster'
 require_relative './Expenditure'
+require_relative './CgiUser'
+require_relative './Account'
 
 =begin
 create table statistics (
@@ -35,7 +37,7 @@ class Statistic < ModelMaster
     end
     # month
     if m.nil? or (not m.is_a?(Integer)) or
-        (m < 1) or (12 < m)
+        (m < 1) or (13 < m)
       reterr.push("月指定が不正です。")
     end
     # owner
@@ -52,28 +54,7 @@ class Statistic < ModelMaster
     return reterr
   end
 
-  def self.getStats y,m,owner,aid
-    retval = Array.new
-    reterr = nil
-
-    chkrslt = chk(y,m,owner,aid)
-    unless chkrslt.nil?
-      reterr = chkrslt
-    else
-      begin
-        mysqlClient = getMysqlClient
-        
-      rescue Mysql2::Error => e
-        reterr = [e.message]
-      ensure
-        mysqlClient.close unless mysqlClient.nil?
-      end
-    end
-
-    return {:retval => retval, :err => reterr}
-  end
-
-  def self.updStats y,m,owner,aid
+  def self.updStatsSpecificEids y,m,owner,aid
     retval = false
     reterr = nil
 
@@ -93,8 +74,10 @@ class Statistic < ModelMaster
         mysqlClient.query(queryStr)
 
         # calc and insert new stats
-        datefrom = HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, 1))
-        dateto = HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, -1))
+        datefrom =
+          HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, (m==13 ? 1 : m), 1))
+        dateto =
+          HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, (m==13 ? 12 : m), -1))
         subquery = <<-SQL
           select s.EID, s.wdf, a1.name as wdfname,
                  a1.UID as wdfowner,
@@ -128,6 +111,10 @@ class Statistic < ModelMaster
           pmcond = " where pmtowner = '#{owner}' "
           wfsel = " wdfowner as owner, '#{ALLACC}' as account, EID as exp, "
           pmsel = " pmtowner as owner, '#{ALLACC}' as account, EID as exp, "
+          wfsel2 = " wdfowner as owner, '#{ALLACC}' as account, " +
+            " '#{ALLEIDOUT}' as exp, "
+          pmsel2 = " pmtowner as owner, '#{ALLACC}' as account, " +
+            " '#{ALLEIDIN}' as exp, "
         elsif owner != ALLOWNERS and aid != ALLACC
           # 所有者指定あり、口座指定あり
           #  収入計
@@ -142,6 +129,10 @@ class Statistic < ModelMaster
           pmcond = " where pmtowner = '#{owner}' and pmt = '#{aid}' "
           wfsel = " wdfowner as owner, wdf as account, EID as exp, "
           pmsel = " pmtowner as owner, pmt as account, EID as exp, "
+          wfsel2 =
+            " wdfowner as owner, wdf as account, '#{ALLEIDOUT}' as exp, "
+          pmsel2 =
+            " pmtowner as owner, pmt as account, '#{ALLEIDIN}' as exp, "
         elsif owner == ALLOWNERS and aid == ALLACC
           # 所有者指定なし、口座指定なし
           #  収入計
@@ -163,6 +154,10 @@ class Statistic < ModelMaster
             " EID as exp, "
           pmsel = " '#{ALLOWNERS}' as owner, '#{ALLACC}' as account, " +
             " EID as exp, "
+          wfsel2 = " '#{ALLOWNERS}' as owner, '#{ALLACC}' as account, " + 
+            " '#{ALLEIDOUT}' as exp, "
+          pmsel2 = " '#{ALLOWNERS}' as owner, '#{ALLACC}' as account, " +
+            " '#{ALLEIDIN}' as exp, "
         elsif owner == ALLOWNERS and aid != ALLACC
           # 所有者指定なし、口座指定あり
           #  収入計
@@ -176,6 +171,10 @@ class Statistic < ModelMaster
           pmcond = " where pmt = '#{aid}' "
           wfsel = " '#{ALLOWNERS}' as owner, wdf as account, EID as exp, "
           pmsel = " '#{ALLOWNERS}' as owner, pmt as account, EID as exp, "
+          wfsel2 =
+            " '#{ALLOWNERS}' as owner, wdf as account, '#{ALLEIDOUT}' as exp, "
+          pmsel2 =
+            " '#{ALLOWNERS}' as owner, pmt as account, '#{ALLEIDIN}' as exp, "
         end
         
         queryStr = <<-SQL
@@ -183,21 +182,42 @@ class Statistic < ModelMaster
           select iyear, imonth, owner, account, exp, sum(amount) as amount
             from (select #{y} as iyear, #{m} as imonth,
                          #{wfsel}
-                         amt as amount
+                         -amt as amount
                     from ( #{subquery + cond} ) u
                          #{wfcond}
                   union all
                   select #{y} as iyear, #{m} as imonth,
                          #{pmsel}
-                         -amt as amount
+                         amt as amount
                       from ( #{subquery + cond} ) u
                          #{pmcond}
                  ) t
            group by iyear, imonth, owner, account, exp
         SQL
         mysqlClient.query(queryStr)
-        
         retval = (mysqlClient.affected_rows > 0)
+
+        queryStr = <<-SQL
+          insert into statistics(iyear, imonth, owner, AID, EID, amount)
+          select iyear, imonth, owner, account, exp, amount
+            from (select #{y} as iyear, #{m} as imonth,
+                         #{wfsel2}
+                         sum(-amt) as amount
+                    from ( #{subquery + cond} ) u
+                         #{wfcond}
+                   group by iyear, imonth, owner, account
+                  union all
+                  select #{y} as iyear, #{m} as imonth,
+                         #{pmsel2}
+                         sum(amt) as amount
+                    from ( #{subquery + cond} ) u
+                         #{pmcond}
+                   group by iyear, imonth, owner, account
+                 ) t
+        SQL
+        mysqlClient.query(queryStr)
+
+        retval = retval and (mysqlClient.affected_rows > 0)
       rescue Mysql2::Error => e
         reterr = [e.message]
       ensure
@@ -208,12 +228,14 @@ class Statistic < ModelMaster
     return {:retval => retval, :err => reterr}
   end
   
-  def self.updStatsAllEid y,m
+  def self.updStatsAllEid y,m=13
     retval = false
     reterr = nil
 
-    datefrom = HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, 1))
-    dateto = HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, -1))
+    datefrom =
+      HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, (m==13 ? 1 : m), 1))
+    dateto =
+      HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, (m==13 ? 12 : m), -1))
     subquery = <<-SQL
       select s.EID, s.wdf, a1.name as wdfname,
              a1.UID as wdfowner,
@@ -240,11 +262,11 @@ class Statistic < ModelMaster
 
       # calc and insert ALLOUT Expenditures per owners
       queryStr = <<-SQL
-      insert into statistics(iyear, imonth, owner, AID, EID, amount)
+        insert into statistics(iyear, imonth, owner, AID, EID, amount)
         select #{y} as iyear, #{m} as imonth,
                wdfowner as owner, '#{ALLACC}' as AID,
                '#{ALLEIDOUT}' as EID,
-               sum(amt) as amount
+               sum(-amt) as amount
           from ( #{subquery}
                  where (a1.UID <> a2.UID
                         or (a1.UID is not null
@@ -261,7 +283,7 @@ class Statistic < ModelMaster
         select #{y} as iyear, #{m} as imonth,
                pmtowner as owner, '#{ALLACC}' as AID,
                '#{ALLEIDIN}' as EID,
-               sum(-amt) as amount
+               sum(amt) as amount
           from ( #{subquery}
                  where (a1.UID <> a2.UID
                         or (a1.UID is null
@@ -278,11 +300,12 @@ class Statistic < ModelMaster
         select #{y} as iyear, #{m} as imonth,
                '#{ALLOWNERS}' as owner, '#{ALLACC}' as AID,
                '#{ALLEIDOUT}' as EID,
-               sum(amt) as amount
+               sum(-amt) as amount
           from ( #{subquery}
                  where (wdf is not null
                         and pmt is null)
                ) u
+        having sum(amt) is not null
       SQL
       mysqlClient.query(queryStr)
       retval = (retval ? (mysqlClient.affected_rows > 0) : false)
@@ -293,11 +316,12 @@ class Statistic < ModelMaster
         select #{y} as iyear, #{m} as imonth,
                '#{ALLOWNERS}' as owner, '#{ALLACC}' as AID,
                '#{ALLEIDIN}' as EID,
-               sum(-amt) as amount
+               sum(amt) as amount
           from ( #{subquery}
                  where (wdf is null
                         and pmt is not null)
                ) u
+        having sum(amt) is not null
       SQL
       mysqlClient.query(queryStr)
       retval = (retval ? (mysqlClient.affected_rows > 0) : false)
@@ -310,5 +334,83 @@ class Statistic < ModelMaster
     end
 
     return {:retval => retval, :err => reterr}
+  end
+  private_class_method :chk
+  private_class_method :updStatsSpecificEids
+  private_class_method :updStatsAllEid
+
+  def self.getStats y,m=13,uid=ALLOWNERS,aid=ALLACC
+    retval = Array.new
+    reterr = nil
+
+    unless y.is_a?(Integer) or m.is_a?(Integer)
+      reterr = "年月は整数で指定してください。"
+    else
+      begin
+        mysqlClient = getMysqlClient
+        queryStr = <<-SQL
+          select s.iyear as y, s.imonth as m,
+                 ifnull(u.Name, s.owner) as owner,
+                 ifnull(a.name, s.AID) as aid,
+                 ifnull(e.name, s.EID) as eid,
+                 s.amount as amount
+            from statistics s
+                 left join accounts a on s.AID = cast(a.AID as char)
+                 left join expenditures e on s.EID = cast(e.EID as char)
+                 left join cgiUsers u on s.owner = u.UID
+           where s.iyear = #{y.to_s} and s.imonth = #{m.to_s}
+                 and s.owner = '#{uid}'
+                 and s.AID='#{aid}'
+           order by owner, aid, eid
+        SQL
+        rsltset = mysqlClient.query(queryStr)
+        rsltset.each do |row|
+          retval.push({ :y => row["y"],
+                        :m => row["m"],
+                        :owner => row["owner"],
+                        :aid => row["aid"],
+                        :eid => row["eid"],
+                        :amount => row["amount"] })
+        end
+      rescue Mysql2::Error => e
+        reterr = e.message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
+    return {:retval => retval, :err => reterr}
+  end
+
+  def self.updStats y,m=13
+    retval = Array.new
+
+    # upd specifc eid stats
+    uids = CgiUser.getUserList
+    aids = Account.list
+    if uids[:iserr]==true
+      retval.push(uids[:errstr])
+    elsif (not aids[:err].nil?)
+      retval.push(aids[:err])
+    else
+      uids = uids[:ulist].map{ |elm| elm[:uid] }.push(ALLOWNERS)
+      aids = aids[:retval].map{ |elm| elm[:AID].to_s }.push(ALLACC)
+      
+      uids.each do |uid|
+        aids.each do |aid|
+          ret = updStatsSpecificEids y,m,uid,aid
+          if (not ret[:retval]) and (not ret[:err].nil?)
+            retval.concat(ret[:reterr])
+          end
+        end
+      end
+    end
+    
+    # upd all stats
+    ret = updStatsAllEid y,m
+    if (not ret[:retval]) and (not ret[:err].nil?)
+      retval.push(ret[:err])
+    end
+    return { :retval => (retval.size==0), :err => retval }
   end
 end
