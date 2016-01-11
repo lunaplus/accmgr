@@ -61,6 +61,7 @@ class StatisticsController
     displist = ""
     displist =
       (HtmlUtil.fmtStatsList(session[UPDRET])).to_s unless session[UPDRET].nil?
+    session[UPDRET] = nil
 
     form = Pathname("view/Stat.html.erb").read(:encoding => Encoding::UTF_8)
     return (ERB.new(form).result(binding)), false, ""
