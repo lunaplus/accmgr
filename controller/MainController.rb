@@ -27,7 +27,7 @@ class MainController
     outexpsel = HtmlUtil.expSel Expenditure::C_OUT
     mvexpsel = HtmlUtil.expSel Expenditure::C_MOVE
 
-    wFromsel = HtmlUtil.accSel
+    wFromsel = "<option value=\"\"></option>" + HtmlUtil.accSel
     pTosel = wFromsel.clone
 
     paymonthsel = HtmlUtil.createMonthSel 0,false
