@@ -18,6 +18,7 @@ class HtmlUtil
   AccCtrlName = "acc"
   ExpCtrlName = "exp"
   StatCtrlName = "stscs"
+  SpecCtrlName = "spec"
 
   URLROOT = "/accmgr"
 
@@ -110,6 +111,10 @@ class HtmlUtil
     return (createUrl StatCtrlName,act)
   end
 
+  def self.getSpecUrl act="index"
+    return (createUrl SpecCtrlName,act)
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
@@ -148,12 +153,14 @@ class HtmlUtil
     personMgmtUrl = HtmlUtil.getMenuUrl("person")
     accmgmtUrl = HtmlUtil.getAccUrl
     expmgmtUrl = HtmlUtil.getExpUrl
+    specUrl = HtmlUtil.getSpecUrl
     statUrl = HtmlUtil.getStatUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
     accmgmtUrl = "#" if HtmlUtil.getAccUrl == now
     expmgmtUrl = "#" if HtmlUtil.getExpUrl == now
+    specUrl = "#" if HtmlUtil.getSpecUrl == now
     statUrl = "#" if HtmlUtil.getStatUrl == now
 
     menuList = <<-MENU
@@ -167,6 +174,7 @@ class HtmlUtil
         <li><a href="#{accmgmtUrl}">口座管理画面へ</a></li>
         <li><a href="#{expmgmtUrl}">費目管理画面へ</a></li>
         <li><a href="#{statUrl}">統計画面へ</a></li>
+        <li><a href="#{specUrl}">明細検索画面へ</a></li>
       </ul>
     </li>
   </ul>
@@ -233,6 +241,33 @@ class HtmlUtil
     return retval
   end
 
+  def self.fmtSpecList arr
+    retval = <<-HTML
+      <table>
+        <tr>
+          <th>日付</th>
+          <th>費目</th>
+          <th>口座</th>
+          <th>金額</th>
+          <th>詳細</th>
+        </tr>
+    HTML
+    arr.each do |elm|
+      retval += <<-HTML
+        <tr id="#{elm[:sid]}">
+          <td>#{fmtDtToShort(elm[:wpdate])}</td>
+          <td>#{elm[:ename]}</td>
+          <td>#{elm[:owner]}</td>
+          <td style="text-align: right;">#{elm[:amount].to_currency}</td>
+          <td>#{elm[:desc]}</td>
+        </tr>
+      HTML
+    end
+
+    retval += " </table> "
+    return retval
+  end
+
 ## return select box of date
   def self.createYearSel sel=0,from=-1,to=1
     # year sel : 入力日とその前後1年分の年数を表示する。デフォルトは当年。
@@ -278,15 +313,16 @@ class HtmlUtil
   end
 
 ## return select box of Expenditure
-  def self.expSel arg=nil
-    explist = Expenditure.list arg
+  def self.expSel cls=nil,arg=nil
+    explist = Expenditure.list cls
     if not explist[:err].nil?
       retval = "<option>" + explist[:err] + "</option>"
     else
       retval = "<option value=\"\"></option>"
       explist[:retval].each do |elm|
-        retval += "<option value=\"#{elm[:eid]}\">"
-        retval += "#{elm[:name]}</option>"
+        retval += "<option value=\"#{elm[:eid]}\""
+        retval += " selected " if (not arg.nil?) and elm[:eid]==arg
+        retval += ">#{elm[:name]}</option>"
       end
     end
 
@@ -529,6 +565,10 @@ class HtmlUtil
   # cast from datetime to string (DB -> Str, DateTime -> DB(str))
   def self.fmtDtToStr dt
     return dt.strftime(REGDTFMT)
+  end
+
+  def self.fmtDtToShort dt
+    return dt.strftime(REGDFMT1)
   end
 
   # cast from string to datetime

@@ -138,6 +138,90 @@ class Specification < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
+  def self.chkSearch y,m,o,a,e
+    reterr = Array.new
+
+    if y.nil? or (not y.is_a?(Integer))
+      reterr.push("年指定が不正です。")
+    end
+    if m.nil? or (not m.is_a?(Integer)) or
+        m<1 or 12<m
+      reterr.push("月指定が不正です。")
+    end
+    if o.nil? or (not o.is_a?(String))
+      reterr.push("対象者指定が不正です。")
+    end
+    if a.nil? or (not a.is_a?(String))
+      reterr.push("対象口座指定が不正です。")
+    end
+    if e.nil? or (not e.is_a?(String))
+      reterr.push("対象費目指定が不正です。")
+    end
+
+    return {:retval => (reterr.size==0), :err => reterr}
+  end
+
+  def self.search y,m,o,a,e
+    retval = Array.new
+    reterr = nil
+
+    # input check
+    chkrslt = chkSearch y,m,o,a,e
+    unless chkrslt[:retval]
+      reterr = chkrslt[:err]
+    else
+      wpdfrom =
+        HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, 1))
+      wpdto =
+        HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, -1))
+      begin
+        mysqlClient = getMysqlClient
+        cond = " and wpdate between '#{wpdfrom}' and '#{wpdto}' "
+        subquery = <<-SQL
+          select sid, wpdate, eid, withdrawFrom as account,
+                 -amount as amount, description
+            from specifications
+           where withdrawfrom is not null
+                 #{cond}
+          union
+          select sid, wpdate, eid, paymentTo, amount, description
+            from specifications
+           where paymentto is not null
+                 #{cond}
+        SQL
+        queryStr = <<-SQL
+          select s.sid as sid, s.wpdate as wpdate, e.name as ename,
+                 a.name as account, s.amount as amount,
+                 s.description as description
+            from (#{subquery}) s
+                 left join expenditures e on s.eid=e.eid
+                 left join accounts a on s.account=a.aid
+        SQL
+        condtmp = Array.new
+        condtmp.push(" s.eid=#{e.to_i} ") unless e.empty?
+        condtmp.push(" s.account=#{a.to_i} ") unless a.empty?
+        condtmp.push(" a.uid='#{o}' ") unless o.empty?
+        queryStr += " where " + condtmp.join(" and ") if condtmp.size>0
+
+        rsltset = mysqlClient.query(queryStr)
+        rsltset.each do |row|
+          retval.push({ :sid => row["sid"],
+                        :wpdate => row["wpdate"],
+                        :ename => row["ename"],
+                        :owner => row["account"],
+                        :amount => row["amount"],
+                        :desc => row["description"] })
+        end
+      rescue Mysql2::Error => e
+        reterr = [e.message]
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
+    return {:retval => retval, :err => reterr}
+  end
+
   def self.ins(wpd, eid, wdFrom, pmTo, amount, pmonth, desc)
     retval = false
     reterr = nil

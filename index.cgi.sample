@@ -72,6 +72,9 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::StatCtrlName
       require_relative './controller/StatisticsController'
       ctrler = StatisticsController.new
+    when HtmlUtil::SpecCtrlName
+      require_relative './controller/SpecController'
+      ctrler = SpecController.new
     when HtmlUtil::AccCtrlName
       require_relative './controller/AccountMgrController'
       ctrler = AccountMgrController.new

@@ -1,0 +1,47 @@
+<div id="titles">
+  <h2>明細検索画面</h2>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<%= menuList %>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
+<div id="inputarea">
+  <form name="inputarea" method="post" accept-charset="UTF-8"
+	autocomplete="off" action="<%= actionUrl %>">
+    <div id="datetime">
+      <select name="<%= SELYEAR %>" id="<%= SELYEAR %>">
+	<%= selyear %>
+      </select>年
+      <select name="<%= SELMONTH %>" id="<%= SELMONTH %>">
+	<%= selmonth %>
+      </select>月
+    </div>
+    <div id="target">
+      <div id="owner">
+	対象者
+	<select name="<%= SELOWNER %>" id="<%= SELOWNER %>">
+	  <%= selowner %>
+	</select>
+      </div>
+      <div id="account">
+	対象口座
+	<select name="<%= SELACC %>" id="<%= SELACC %>">
+	  <%= selacc %>
+	</select>
+      </div>
+      <div id="expenditure">
+	対象費目
+	<select name="<%= SELEXP %>" id="<%= SELEXP %>">
+	  <%= selexp %>
+	</select>
+      </div>
+    </div>
+    <input type="submit" name="submit" value="検索">
+  </form>
+</div>
+<div id="speclist">
+  <%= searchresult %>
+</div>
