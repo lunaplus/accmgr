@@ -32,8 +32,10 @@ class SpecController
     errorstr = session[UPDERR] unless session[UPDERR].nil?
     session[UPDERR] = nil
 
-    y = (session[UPD_Y].nil? ? 0 : (session[UPD_Y] - Time.now.year))
+    y = (session[UPD_Y].nil? or session[UPD_Y]==0 ? 0
+         : (session[UPD_Y] - Time.now.year))
     m = (session[UPD_M].nil? ? 0 : session[UPD_M])
+
     msel = (not (m==0 or m==13))
     owner = (session[UPD_O].nil? ? login : session[UPD_O])
     acc = session[UPD_A]
@@ -77,9 +79,10 @@ class SpecController
       Specification.search(session[UPD_Y],session[UPD_M],
                            session[UPD_O],session[UPD_A],
                            session[UPD_E])
+    formedsrch = HtmlUtil.fmtSpecList(srch[:retval])
 
     session[UPDERR] = srch[:err]
-    session[UPDRST] = HtmlUtil.fmtSpecList(srch[:retval])
+    session[UPDRST] = formedsrch
 
     return "", true, HtmlUtil.getSpecUrl
   end

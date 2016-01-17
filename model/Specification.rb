@@ -19,6 +19,9 @@ create table specifications (
 
 class Specification < ModelMaster
 
+  LOAN_LOANING = 1
+  LOAN_RETURNED = 2
+
   def self.chkSpc arg
     tmperr = Array.new
 
@@ -81,6 +84,15 @@ class Specification < ModelMaster
             pmonth < 1 or 12 < pmonth )
         # pmonth as Integer
         tmperr.push("カード支払い月が不正です。")
+      end
+    end
+    if arg.has_key?(:loan)
+      # loan : nil, 1, 2
+      loan = arg[:loan]
+      if (not loan.nil?) and
+          ( (not loan.is_a?(Integer)) or
+            loan!=LOAN_LOANING and loan!=LOAN_RETURNED )
+        tmperr.push("貸し区分が不正です。")
       end
     end
     
@@ -202,6 +214,7 @@ class Specification < ModelMaster
         condtmp.push(" s.account=#{a.to_i} ") unless a.empty?
         condtmp.push(" a.uid='#{o}' ") unless o.empty?
         queryStr += " where " + condtmp.join(" and ") if condtmp.size>0
+        queryStr += " order by s.wpdate, s.eid, s.account "
 
         rsltset = mysqlClient.query(queryStr)
         rsltset.each do |row|
@@ -222,13 +235,14 @@ class Specification < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.ins(wpd, eid, wdFrom, pmTo, amount, pmonth, desc)
+  def self.ins(wpd, eid, wdFrom, pmTo, amount, pmonth, desc, loan=nil)
     retval = false
     reterr = nil
     
     tmperr = chkSpc({ :wpd => wpd, :eid => eid,
                       :wdFrom => wdFrom, :pmTo => pmTo,
-                      :amount => amount, :pmonth => pmonth })
+                      :amount => amount, :pmonth => pmonth,
+                      :loan => loan })
     
     if tmperr.size <= 0
       begin
@@ -240,6 +254,7 @@ class Specification < ModelMaster
         queryStr += " , paymentTo " unless pmTo.nil?
         queryStr += " , paymentMonth" unless pmonth.nil?
         queryStr += " , description " unless desc.nil?
+        queryStr += " , loanstatus " unless loan.nil?
         queryStr += " )values( "
         wpddt = HtmlUtil.fmtDtToStr (HtmlUtil.fmtStrToDt wpd)
         tmparr = Array.new
@@ -248,6 +263,7 @@ class Specification < ModelMaster
         tmparr.push(pmTo.to_s) unless pmTo.nil?
         tmparr.push(pmonth.to_s) unless pmonth.nil?
         tmparr.push("'#{desc}'") unless desc.nil?
+        tmparr.push("#{loan.to_s}") unless loan.nil?
         queryStr += tmparr.join(",") + ")"
 
         mysqlClient.query(queryStr)
@@ -265,15 +281,99 @@ class Specification < ModelMaster
   end
 
   def self.updPaymentMonth(sid, pmonth)
+    #TODO: implement
     retval = false
     reterr = nil
     begin
       mysqlClient = getMysqlClient
     rescue Mysql2::Error => e
-      
+      reterr = e.message
     ensure
       mysqlClient.close unless mysqlClient.nil?
     end
+    return {:retval => retval, :err => reterr}
+  end
+
+  def self.listLoaning flg
+    # flg: true => listup loning, false => listuup returned borrows
+    retval = {:sums => Array.new, :lists => Array.new}
+    reterr = nil
+    begin
+      cond = " and loanstatus = " + (flg==true ? LOAN_LOANING.to_s
+                                     : LOAN_RETURNED.to_s)
+      subquery = <<-SQL
+        select sid, wpdate, eid, withdrawFrom as account,
+               -amount as amount, description
+          from specifications
+         where withdrawfrom is not null
+               #{cond}
+        union
+        select sid, wpdate, eid, paymentTo, amount, description
+          from specifications
+         where paymentto is not null
+               #{cond}
+      SQL
+      queryStr = <<-SQL
+        select s.sid as sid, s.wpdate as wpdate, e.name as ename,
+               a.name as account, s.amount as amount,
+               s.description as description
+          from (#{subquery}) s
+               left join expenditures e on s.eid=e.eid
+               left join accounts a on s.account=a.aid
+         order by s.wpdate, s.eid, s.account
+      SQL
+      mysqlClient = getMysqlClient
+      rsltset = mysqlClient.query(queryStr)
+      rsltset.each do |row|
+        retval[:lists].push({ :sid => row["sid"],
+                              :wpdate => row["wpdate"],
+                              :ename => row["ename"],
+                              :owner => row["account"],
+                              :amount => row["amount"],
+                              :desc => row["description"] })
+      end
+      queryStr = <<-SQL
+        select o.name as owner, sum(s.amount) as amount
+          from (#{subquery}) s
+               left join accounts a on s.account=a.aid
+               left join cgiUsers o on a.uid=o.uid
+         group by o.name
+      SQL
+      rsltset = mysqlClient.query(queryStr)
+      rsltset.each do |row|
+        retval[:sums].push({ :amount => row["amount"],
+                             :owner => row["owner"] })
+      end
+    rescue Mysql2::Error => e
+      reterr = e.message
+    ensure
+      mysqlClient.close unless mysqlClient.nil?
+    end
+
+    return {:retval => retval, :err => reterr}
+  end
+
+  def self.updLoanings sid
+    retval = false
+    reterr = nil
+    queryStr = <<-SQL
+      update specifications set loanStatus = #{LOAN_RETURNED}
+             where sid <= #{sid} and loanStatus = #{LOAN_LOANING}
+    SQL
+
+    if sid>0
+      begin
+        mysqlClient = getMysqlClient
+        mysqlClient.query(queryStr)
+        
+        retval = (mysqlClient.affected_rows > 0)
+      rescue Mysql2::Error => e
+        reterr = e.message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
     return {:retval => retval, :err => reterr}
   end
 end

@@ -19,6 +19,7 @@ class HtmlUtil
   ExpCtrlName = "exp"
   StatCtrlName = "stscs"
   SpecCtrlName = "spec"
+  LoanCtrlName = "loan"
 
   URLROOT = "/accmgr"
 
@@ -115,6 +116,10 @@ class HtmlUtil
     return (createUrl SpecCtrlName,act)
   end
 
+  def self.getLoanUrl act="index"
+    return (createUrl LoanCtrlName,act)
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
@@ -155,6 +160,7 @@ class HtmlUtil
     expmgmtUrl = HtmlUtil.getExpUrl
     specUrl = HtmlUtil.getSpecUrl
     statUrl = HtmlUtil.getStatUrl
+    loanUrl = HtmlUtil.getLoanUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
@@ -162,6 +168,7 @@ class HtmlUtil
     expmgmtUrl = "#" if HtmlUtil.getExpUrl == now
     specUrl = "#" if HtmlUtil.getSpecUrl == now
     statUrl = "#" if HtmlUtil.getStatUrl == now
+    loanUrl = "#" if HtmlUtil.getLoanUrl == now
 
     menuList = <<-MENU
 <div id="menuarea">
@@ -175,6 +182,7 @@ class HtmlUtil
         <li><a href="#{expmgmtUrl}">費目管理画面へ</a></li>
         <li><a href="#{statUrl}">統計画面へ</a></li>
         <li><a href="#{specUrl}">明細検索画面へ</a></li>
+        <li><a href="#{loanUrl}">立替え清算画面へ</a></li>
       </ul>
     </li>
   </ul>
@@ -268,11 +276,55 @@ class HtmlUtil
     return retval
   end
 
+  def self.fmtLoaningList arr
+    retval = <<-HTML
+      <table>
+        <tr>
+          <th>支払者</th>
+          <th>支払総額</th>
+        </tr>
+    HTML
+    arr[:sums].each do |elm|
+      retval += <<-HTML
+        <tr>
+          <td>#{elm[:owner]}</td>
+          <td style="text-align: right;">#{elm[:amount].to_currency}</td>
+        </tr>
+      HTML
+    end
+    retval += <<-HTML
+        <tr><td colspan="3">
+        <table>
+          <tr>
+            <th>日付</th>
+            <th>費目</th>
+            <th>口座</th>
+            <th>金額</th>
+            <th>詳細</th>
+          </tr>
+    HTML
+    arr[:lists].each do |elm|
+      retval += <<-HTML
+          <tr id="#{elm[:sid].to_s}">
+            <td>#{fmtDtToShort(elm[:wpdate])}</td>
+            <td>#{elm[:ename]}</td>
+            <td>#{elm[:owner]}</td>
+            <td style="text-align: right;">#{elm[:amount].to_currency}</td>
+            <td>#{elm[:desc]}</td>
+          </tr>
+      HTML
+    end
+    retval += <<-HTML
+        </td></tr>
+      </table>
+    HTML
+  end
+
 ## return select box of date
   def self.createYearSel sel=0,from=-1,to=1
     # year sel : 入力日とその前後1年分の年数を表示する。デフォルトは当年。
     today = Time.now
-    defyear = today.year + sel
+    defyear = today.year + (sel.is_a?(Integer) ? sel : 0)
     retyear = ""
     min = today.year + (from < to ? from : to)
     max = today.year + (from <= to ? to : from)

@@ -1,0 +1,26 @@
+<div id="titles">
+  <h2>立替清算画面</h2>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<%= menuList %>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
+<div id="inputarea">
+  <form name="inputarea" method="post" accept-charset="UTF-8"
+	autocomplete="off" action="<%= updUrl %>">
+    <input type="hidden" name="<%= HIDMAXSID %>" value="<%= maxsid %>">
+    <input type="submit" name="submit" value="清算">
+  </form>
+  <form name="inputarea" method="post" accept-charset="UTF-8"
+	autocomplete="off" action="<%= srchUrl %>">
+    <input type="submit" name="submit" value="検索">
+    <label for="<%= CHKDONE %>">清算済を表示</label>
+    <input type="checkbox" name="<%= CHKDONE %>" id="<%= CHKDONE %>">
+  </form>
+</div>
+<div id="speclist">
+  <%= searchresult %>
+</div>

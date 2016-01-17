@@ -53,6 +53,8 @@ class MainController
     amounts = (args[0]["amounts"][0]).gsub(',','').to_i
     desc = args[0]["desc"][0]
     pmonth = (args[0]["payMonth"][0]).to_i
+    chkLoan = (args[0]["chkLoan"][0] == "on")
+    loan = (chkLoan==true ? Specification::LOAN_LOANING : nil)
 
     wpd = HtmlUtil.mkDt year,month,date
 
@@ -80,7 +82,7 @@ class MainController
     end
     if tmpupderr.empty?
       rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                  wfrom, pto, amounts, pmonth, desc)
+                                  wfrom, pto, amounts, pmonth, desc, loan)
       tmpupderr += rethash[:err] unless rethash[:err].nil?
     end
     if tmpupderr.empty? and (not pto.nil?)
