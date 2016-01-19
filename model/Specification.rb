@@ -294,13 +294,20 @@ class Specification < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
-  def self.listLoaning flg
+  def self.listLoaning flg,y=0,m=0
     # flg: true => listup loning, false => listuup returned borrows
     retval = {:sums => Array.new, :lists => Array.new}
     reterr = nil
     begin
       cond = " and loanstatus = " + (flg==true ? LOAN_LOANING.to_s
                                      : LOAN_RETURNED.to_s)
+      if flg==false
+        wpdfrom =
+          HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, 1))
+        wpdto =
+          HtmlUtil.fmtDtToStr(HtmlUtil.mkDt(y, m, -1))
+        cond += " and wpdate between '#{wpdfrom}' and '#{wpdto}' "
+      end
       subquery = <<-SQL
         select sid, wpdate, eid, withdrawFrom as account,
                -amount as amount, description
@@ -322,6 +329,7 @@ class Specification < ModelMaster
                left join accounts a on s.account=a.aid
          order by s.wpdate, s.eid, s.account
       SQL
+
       mysqlClient = getMysqlClient
       rsltset = mysqlClient.query(queryStr)
       rsltset.each do |row|

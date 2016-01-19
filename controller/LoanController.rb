@@ -10,6 +10,8 @@ class LoanController
 
   CHKDONE = "chkdone"
   HIDMAXSID = "hidMaxSid"
+  SELYEAR = "selyear"
+  SELMONTH = "selmonth"
 
   def index session,args
     login = session[HtmlUtil::LOGINID]
@@ -20,8 +22,15 @@ class LoanController
     updUrl = HtmlUtil.getLoanUrl("update")
     srchUrl = HtmlUtil.getLoanUrl
 
+    y = args[0][SELYEAR][0].to_i
+    yy = (y==0 ? y : y - Time.now.year)
+    m = args[0][SELMONTH][0].to_i
+    m = Time.now.month if m<1 or 12<m
+    selyear = HtmlUtil.createYearSel yy,-5,1
+    selmonth = HtmlUtil.createMonthSel m,true
+
     chkDone = (args[0][CHKDONE][0] != "on") # true: not done, false: done
-    srch = Specification.listLoaning chkDone
+    srch = Specification.listLoaning chkDone,y,m
     searchresult = HtmlUtil.fmtLoaningList(srch[:retval])
     js = ""
     if chkDone==false

@@ -11,16 +11,26 @@
 <div id="inputarea">
   <form name="inputarea" method="post" accept-charset="UTF-8"
 	autocomplete="off" action="<%= updUrl %>">
-    <input type="hidden" name="<%= HIDMAXSID %>" value="<%= maxsid %>">
-    <input type="submit" name="submit" value="清算">
+    <input type="hidden" name="<%= HIDMAXSID %>" id="<%= HIDMAXSID %>"
+	   value="<%= maxsid %>">
+    <input type="submit" name="submit" id="liquidation" value="清算">
   </form>
   <form name="inputarea" method="post" accept-charset="UTF-8"
 	autocomplete="off" action="<%= srchUrl %>">
     <input type="submit" name="submit" value="検索">
     <label for="<%= CHKDONE %>">清算済を表示</label>
     <input type="checkbox" name="<%= CHKDONE %>" id="<%= CHKDONE %>">
+    <div id="datetime">
+      <select name="<%= SELYEAR %>" id="<%= SELYEAR %>">
+	<%= selyear %>
+      </select>年
+      <select name="<%= SELMONTH %>" id="<%= SELMONTH %>">
+	<%= selmonth %>
+      </select>月
+    </div>
   </form>
 </div>
 <div id="speclist">
   <%= searchresult %>
 </div>
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>loan.js'></script>
