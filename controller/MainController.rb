@@ -56,7 +56,11 @@ class MainController
     chkLoan = (args[0]["chkLoan"][0] == "on")
     loan = (chkLoan==true ? Specification::LOAN_LOANING : nil)
 
-    wpd = HtmlUtil.mkDt year,month,date
+    begin
+      wpd = HtmlUtil.mkDt year,month,date
+    rescue ArgumentError => e
+      wpd = nil
+    end
 
     case wpkinds
     when "withdraw" then
@@ -76,18 +80,25 @@ class MainController
     desc = nil if desc.empty?
 
     tmpupderr = Array.new
-    if (not wfrom.nil?)
-      rethash = Account.addBalance(wfrom, -amounts)
-      tmpupderr += [rethash[:err]] unless rethash[:err].nil?
-    end
-    if tmpupderr.empty?
-      rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                  wfrom, pto, amounts, pmonth, desc, loan)
-      tmpupderr += rethash[:err] unless rethash[:err].nil?
-    end
-    if tmpupderr.empty? and (not pto.nil?)
-      rethash = Account.addBalance(pto, amounts)
-      tmpupderr += [rethash[:err]] unless rethash[:err].nil?
+    if wpd.nil?
+      tmpupderr += ["日付入力が不正です。" +
+                    "/ year : " + year.to_s +
+                    ", month : " + month.to_s +
+                    ", date : " + date.to_s]
+    else
+      if (not wfrom.nil?)
+        rethash = Account.addBalance(wfrom, -amounts)
+        tmpupderr += [rethash[:err]] unless rethash[:err].nil?
+      end
+      if tmpupderr.empty?
+        rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
+                                    wfrom, pto, amounts, pmonth, desc, loan)
+        tmpupderr += rethash[:err] unless rethash[:err].nil?
+      end
+      if tmpupderr.empty? and (not pto.nil?)
+        rethash = Account.addBalance(pto, amounts)
+        tmpupderr += [rethash[:err]] unless rethash[:err].nil?
+      end
     end
 
     session[UPDERR] =
