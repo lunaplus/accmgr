@@ -9,6 +9,9 @@ require 'pathname'
 
 class MainController
   UPDERR = "MAINUPDERR"
+  PREVYEAR = "Main.year"
+  PREVMONTH = "Main.month"
+  PREVDATE = "Main.date"
 
   def index session,args
     login = session[HtmlUtil::LOGINID]
@@ -19,9 +22,19 @@ class MainController
 
     actionUrl = HtmlUtil.getMainUrl "update"
 
-    yearsel = HtmlUtil.createYearSel 0,-2,2
-    monthsel = HtmlUtil.createMonthSel (Time.now.month)
-    datesel = HtmlUtil.createDateSel
+    # 直前の入力年月日を保持する
+    prevyear = (session[PREVYEAR].nil? ? 0
+                : (session[PREVYEAR] - Time.now.year))
+    prevmonth = (session[PREVMONTH].nil? ? Time.now.month
+                 : session[PREVMONTH])
+    prevdate = (session[PREVDATE].nil? ? 0 : session[PREVDATE]+1)
+    session[PREVYEAR] = nil
+    session[PREVMONTH] = nil
+    session[PREVDATE] = nil
+
+    yearsel = HtmlUtil.createYearSel prevyear,-2,2
+    monthsel = HtmlUtil.createMonthSel prevmonth
+    datesel = HtmlUtil.createDateSel prevdate
 
     inexpsel = HtmlUtil.expSel Expenditure::C_IN
     outexpsel = HtmlUtil.expSel Expenditure::C_OUT
@@ -100,6 +113,14 @@ class MainController
         tmpupderr += [rethash[:err]] unless rethash[:err].nil?
       end
     end
+
+    # 直前の入力を保持する。
+    session[PREVYEAR] = year
+    session[PREVMONTH] = month
+    session[PREVDATE] = date
+    tmpupderr += [(session[PREVYEAR]).to_s + "," +
+                  (session[PREVMONTH]).to_s + "," +
+                  (session[PREVDATE]).to_s]
 
     session[UPDERR] =
       (HtmlUtil.arrToHtmlList tmpupderr,false) unless tmpupderr.empty?

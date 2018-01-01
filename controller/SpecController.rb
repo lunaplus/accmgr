@@ -34,7 +34,7 @@ class SpecController
 
     y = (session[UPD_Y].nil? or session[UPD_Y]==0 ? 0
          : (session[UPD_Y] - Time.now.year))
-    m = (session[UPD_M].nil? ? 0 : session[UPD_M])
+    m = (session[UPD_M].nil? ? (Time.now.month) : session[UPD_M])
 
     msel = (not (m==0 or m==13))
     owner = (session[UPD_O].nil? ? login : session[UPD_O])

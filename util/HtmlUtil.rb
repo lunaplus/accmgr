@@ -353,7 +353,7 @@ class HtmlUtil
     # date sel : 31日分全部表示する。デフォルトは当日
     today = Time.now
     defaultSel = df-1
-    defaultSel = today.day if df < 1 or df > 31
+    defaultSel = today.day if df < 1 or df > 32
 
     dateSel = ""
     1.upto(31) do |i|
