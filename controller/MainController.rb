@@ -118,9 +118,6 @@ class MainController
     session[PREVYEAR] = year
     session[PREVMONTH] = month
     session[PREVDATE] = date
-    tmpupderr += [(session[PREVYEAR]).to_s + "," +
-                  (session[PREVMONTH]).to_s + "," +
-                  (session[PREVDATE]).to_s]
 
     session[UPDERR] =
       (HtmlUtil.arrToHtmlList tmpupderr,false) unless tmpupderr.empty?
