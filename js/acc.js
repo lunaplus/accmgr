@@ -9,7 +9,8 @@ var LBLDT = "lblDate"
 
 // edit checkbox
 function chgEdit(){
-    var i = this.id.substring(this.id.length-1,this.id.length);
+    //var i = this.id.substring(this.id.length-1,this.id.length);
+    var i = this.id.replace(new RegExp(CHKEDIT, "g"), "");
     chgDisabled(TXTNM+i, this.checked);
     chgDisabled(SELUID+i, this.checked);
     chgDisabled(TXTBL+i, this.checked);
