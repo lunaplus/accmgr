@@ -5,7 +5,8 @@ var SELCLSFY = "selClsfy"
 
 // edit checkbox
 function chgEdit(){
-    var i = this.id.substring(this.id.length-1,this.id.length);
+    //var i = this.id.substring(this.id.length-1,this.id.length);
+    var i= this.id.replace(new RegExp(CHKEDIT, "g"), "");
     chgDisabled(TXTNM+i, this.checked);
     chgDisabled(SELCLSFY+i, this.checked);
     chgDisabled(HIDEID+i, this.checked);
