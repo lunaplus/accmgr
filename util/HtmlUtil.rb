@@ -37,6 +37,8 @@ class HtmlUtil
   SELCLSFY = "selClsfy"
   TXTBL = "txtBalance"
   LBLDT = "lblDate"
+  SELFREEZE = "selFreeze"
+  TXTSORTS = "txtSorts"
 
   def self.htmlHeader
     ret = <<-HTML
@@ -365,8 +367,8 @@ class HtmlUtil
   end
 
 ## return select box of Expenditure
-  def self.expSel cls=nil,arg=nil
-    explist = Expenditure.list cls
+  def self.expSel cls=nil,arg=nil,frz=false,sorts=false
+    explist = Expenditure.list(cls,frz,sorts)
     if not explist[:err].nil?
       retval = "<option>" + explist[:err] + "</option>"
     else
@@ -540,19 +542,35 @@ class HtmlUtil
     return retval
   end
 
+  def self.expFreezeSel frz=nil
+    retval = ""
+    retval += "<option value=\"#{Expenditure::C_NOFREEZED}\""
+    retval += " selected " if (frz.nil? or frz==Expenditure::C_NOFREEZED)
+    retval += ">#{Expenditure::C_NOFREEZED}(表示)</option>"
+
+    retval += "<option value=\"#{Expenditure::C_FREEZED}\""
+    retval += " selected " if ((not frz.nil?) and frz==Expenditure::C_FREEZED)
+    retval += ">#{Expenditure::C_FREEZED}(非表示)</option>"
+
+    return retval
+  end
+
   def self.expTblList trid, tdid
     retval = ""
-    explist = Expenditure.list
+    explist = Expenditure.list(nil,false,true)
 
     unless explist[:err].nil?
       retval = "<tr><td>" + explist[:err] + "</td></tr>"
     else
       selclsfy = expClsfySel
+      selfrz = expFreezeSel
       retval += <<-HEAD
         <tr>
           <th>編集</th>
           <th>費目名</th>
           <th>費目区分</th>
+          <th>非表示</th>
+          <th>ソート</th>
         </tr>
         <tr id="#{trid}0">
           <td id="#{tdid+CHKEDIT}0">
@@ -568,6 +586,13 @@ class HtmlUtil
             <select name="#{SELCLSFY}" id="#{SELCLSFY}0" disabled="disabled">
             #{selclsfy}
             </select></td>
+          <td id="#{tdid+SELFREEZE}0">
+            <select name="#{SELFREEZE}" id="#{SELFREEZE}0" disabled="disabled">
+            #{selfrz}
+            </select></td>
+          <td id="#{tdid+TXTSORTS}0">
+            <input type="textbox" name="#{TXTSORTS}"
+                   disabled="disabled" id="#{TXTSORTS}0" value=""></td>
         </tr>
       HEAD
       0.upto(explist[:retval].size-1) do |i|
@@ -597,8 +622,24 @@ class HtmlUtil
             <select name="#{SELCLSFY}" id="#{SELCLSFY+j}"
                     disabled="disabled">
             #{selclsfy}
-          </select></td></tr>
+          </select></td>
         CLSFY
+        # freeze
+        selfrz = expFreezeSel(row[:freeze])
+        retval += <<-FRZ
+          <td id="#{tdid+SELFREEZE+j}">
+            <select name="#{SELFREEZE}" id="#{SELFREEZE+j}"
+                    disabled="disabled">
+            #{selfrz}
+            </select></td>
+        FRZ
+        # sorts
+        retval += <<-SORTS
+          <td id="#{tdid+TXTSORTS+j}">
+            <input type="textbox" name="#{TXTSORTS}"
+                   disabled="disabled" id="#{TXTSORTS+j}"
+                   value="#{row[:sorts]}"></td></tr>
+        SORTS
       end
     end
 

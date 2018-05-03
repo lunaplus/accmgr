@@ -2,6 +2,8 @@ var CHKEDIT = "chkEdit"
 var HIDEID = "hidEID"
 var TXTNM = "txtName"
 var SELCLSFY = "selClsfy"
+var SELFREEZE = "selFreeze"
+var TXTSORTS = "txtSorts"
 
 // edit checkbox
 function chgEdit(){
@@ -10,6 +12,8 @@ function chgEdit(){
     chgDisabled(TXTNM+i, this.checked);
     chgDisabled(SELCLSFY+i, this.checked);
     chgDisabled(HIDEID+i, this.checked);
+    chgDisabled(SELFREEZE+i, this.checked);
+    chgDisabled(TXTSORTS+i, this.checked);
 }
 
 function chgDisabled(id, enable){

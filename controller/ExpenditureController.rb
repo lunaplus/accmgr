@@ -31,14 +31,18 @@ class ExpenditureController
     eids = args[0][HtmlUtil::HIDEID]
     names = args[0][HtmlUtil::TXTNM]
     clsfys = args[0][HtmlUtil::SELCLSFY]
+    frzs = args[0][HtmlUtil::SELFREEZE]
+    sortss = args[0][HtmlUtil::TXTSORTS]
 
     errstr = ""
 
     0.upto(chkEdits.size-1) do |i|
       if eids[i].empty?
-        ret = Expenditure.ins(names[i], clsfys[i].to_i)
+        ret = Expenditure.ins(names[i], clsfys[i].to_i,
+                              frzs[i].to_i, sortss[i].to_i)
       else
-        ret = Expenditure.upd(eids[i].to_i, names[i], clsfys[i].to_i)
+        ret = Expenditure.upd(eids[i].to_i, names[i], clsfys[i].to_i,
+                              frzs[i].to_i, sortss[i].to_i)
       end
 
       errstr += ret[:err].join(",") if (not ret[:err].nil?)

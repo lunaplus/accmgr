@@ -36,9 +36,9 @@ class MainController
     monthsel = HtmlUtil.createMonthSel prevmonth
     datesel = HtmlUtil.createDateSel prevdate
 
-    inexpsel = HtmlUtil.expSel Expenditure::C_IN
-    outexpsel = HtmlUtil.expSel Expenditure::C_OUT
-    mvexpsel = HtmlUtil.expSel Expenditure::C_MOVE
+    inexpsel = HtmlUtil.expSel(Expenditure::C_IN, nil, true, true)
+    outexpsel = HtmlUtil.expSel(Expenditure::C_OUT, nil, true, true)
+    mvexpsel = HtmlUtil.expSel(Expenditure::C_MOVE, nil, true, true)
 
     wFromsel = "<option value=\"\"></option>" + HtmlUtil.accSel
     pTosel = wFromsel.clone
