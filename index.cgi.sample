@@ -2,6 +2,11 @@
 # encoding: utf-8
 # ENV['GEM_HOME'] = ''
 
+## 1.after macOS upgrade, reinstall rubies and del->create gemset
+## 2.rvm wrapper ruby-head@accmgr rhaccmgr
+
+require 'mysql2'
+
 require 'cgi'
 require 'cgi/session'
 require_relative './util/HtmlUtil'
@@ -81,6 +86,9 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::LoanCtrlName
       require_relative './controller/LoanController'
       ctrler = LoanController.new
+    when HtmlUtil::CsvCtrlName
+      require_relative './controller/CsvUploadController'
+      ctrler = CsvUploadController.new
     when HtmlUtil::MainCtrlName
       require_relative './controller/MainController'
       ctrler = MainController.new
