@@ -1,0 +1,17 @@
+<div id="titles">
+  <h2>CSVアップロード画面</h2>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<%= menuList %>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
+<div id="inputarea">
+  <form action="<%= actionUrl %>" method="post" accept-charset="UTF-8"
+	autocomplete="off" name="inputarea" enctype="multipart/form-data">
+    <input type="file" name="csvfile" /><br />
+    <input type="submit" id="submit" name="submit" value="アップロード" />
+  </form>
+</div>

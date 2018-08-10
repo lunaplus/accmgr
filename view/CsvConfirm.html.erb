@@ -1,0 +1,18 @@
+<div id="titles">
+  <h2>CSVアップロード確認画面</h2>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<%= menuList %>
+<div id="errorarea">
+  <%= errorstr %>
+</div>
+<div id="inputarea">
+  <form action="<%= actionUrl %>" method="post" accept-charset="UTF-8"
+	autocomplete="off" name="inputarea" enctype="multipart/form-data">
+    <a href="<%= returnUrl %>">更新せずに戻る</a><br>
+    <%= confirm_data %><br>
+    <%= submitButton %>
+  </form>
+</div>

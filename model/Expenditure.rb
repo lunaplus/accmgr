@@ -317,4 +317,95 @@ class Expenditure < ModelMaster
 
     return retval
   end
+
+  def self.foundByName?(name)
+    retval = false
+
+    if name.is_a?(String)
+      begin
+        mysqlClient = getMysqlClient
+        queryStr = "select 1 from expenditures where name = '#{name}'"
+        rsltset = mysqlClient.query(queryStr)
+        
+        retval = (rsltset.size>0)
+      rescue Mysql2::Error => e
+      # no return error message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    end
+
+    return retval
+  end
+
+  def self.getEidByName(name, clsfy)
+    retval = nil
+    reterr = nil
+
+    if name.is_a?(String)
+      begin
+        mysqlClient = getMysqlClient
+        queryStr = "select eid from expenditures where name = '#{name}'"
+        unless clsfy.nil?
+          if clsfy == C_MOVE
+            queryStr += " and classify is " + clsfyToDbVal(clsfy)[:retval]
+          else
+            queryStr += " and classify = " + clsfyToDbVal(clsfy)[:retval]
+          end
+        end
+        rsltset = mysqlClient.query(queryStr)
+        
+        if (rsltset.size == 1)
+          rsltset.each do |row|
+            retval = row["eid"]
+          end
+        else
+          reterr = "同名、同種の費目が複数存在するため、" +
+                   "対象を特定できません"
+        end
+      rescue Mysql2::Error => e
+        reterr = e.message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end
+    else
+      reterr = "引数には文字列(費目名)をセットしてください。"
+    end
+
+    return { :retval => retval, :reterr => reterr }
+  end
+
+  def self.isAppCls(name, i_o_m)
+    retval = false
+
+    if name.is_a?(String) and i_o_m.is_a?(String)
+      queryStr =
+        " select 1 from expenditures where name = '#{name}' and classify "
+
+      case i_o_m
+      when "in" then
+        queryStr += " = " + (clsfyToDbVal(C_IN)[:retval])
+      when "out" then
+        queryStr += " = " + (clsfyToDbVal(C_OUT)[:retval])
+      when "move" then
+        queryStr += " is " + (clsfyToDbVal(C_MOVE)[:retval])
+      else
+        # NOOP (goto Mysql2::Error after exec query)
+      end
+        
+      begin
+        mysqlClient = getMysqlClient
+        rsltset = mysqlClient.query(queryStr)
+
+        retval = (rsltset.size>0)
+      rescue Mysql2::Error => e
+      # no return error message
+      ensure
+        mysqlClient.close unless mysqlClient.nil?
+      end      
+    end
+
+    return retval
+  end
+  
 end

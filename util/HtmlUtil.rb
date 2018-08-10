@@ -20,6 +20,7 @@ class HtmlUtil
   StatCtrlName = "stscs"
   SpecCtrlName = "spec"
   LoanCtrlName = "loan"
+  CsvCtrlName = "csv"
 
   URLROOT = "/accmgr"
 
@@ -122,6 +123,10 @@ class HtmlUtil
     return (createUrl LoanCtrlName,act)
   end
 
+  def self.getCsvUrl act="index"
+    return (createUrl CsvCtrlName,act)
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
@@ -163,6 +168,7 @@ class HtmlUtil
     specUrl = HtmlUtil.getSpecUrl
     statUrl = HtmlUtil.getStatUrl
     loanUrl = HtmlUtil.getLoanUrl
+    csvUrl = HtmlUtil.getCsvUrl
 
     mainUrl = "#" if HtmlUtil.getMainUrl == now
     personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
@@ -171,6 +177,7 @@ class HtmlUtil
     specUrl = "#" if HtmlUtil.getSpecUrl == now
     statUrl = "#" if HtmlUtil.getStatUrl == now
     loanUrl = "#" if HtmlUtil.getLoanUrl == now
+    csvUrl = "#" if HtmlUtil.getCsvUrl == now
 
     menuList = <<-MENU
 <div id="menuarea">
@@ -185,6 +192,7 @@ class HtmlUtil
         <li><a href="#{statUrl}">統計画面へ</a></li>
         <li><a href="#{specUrl}">明細検索画面へ</a></li>
         <li><a href="#{loanUrl}">立替え清算画面へ</a></li>
+        <li><a href="#{csvUrl}">CSVアップロード画面へ</a></li>
       </ul>
     </li>
   </ul>

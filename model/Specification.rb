@@ -13,7 +13,9 @@ create table specifications (
        withdrawFrom bigint,
        paymentTo bigint,
        amount bigint,
-       paymentMonth int
+       paymentMonth int,
+       description text,
+       loanstatus tinyint -- 1:loaning, 2:borrows returned
 );
 =end
 
