@@ -92,6 +92,33 @@ class Account < ModelMaster
     return {:retval => retval, :err => reterr}
   end
 
+  def self.getBalance aid
+    retval = nil
+    reterr = nil
+
+    begin
+      mysqlClient = getMysqlClient
+      queryStr = <<-SQL
+        SELECT balance,name FROM accounts WHERE aid = '#{aid}'
+      SQL
+      rsltset = mysqlClient.query(queryStr)
+
+      if rsltset.size != 1
+        reterr = "対象データが一意に特定できません。AID=#{aid}"
+      end
+      rsltset.each do |row|
+        retval = {:balance => row["balance"],
+                  :name => row["name"]}
+      end
+    rescue Mysql2::Error => e
+      reterr = e.message
+    ensure
+      mysqlClient.close unless mysqlClient.nil?
+    end
+
+    return {:retval => retval, :err => reterr}
+  end
+
   def self.list
     retval = Array.new
     reterr = nil

@@ -21,6 +21,7 @@ class MainController
     menuList = HtmlUtil.getMenuList(HtmlUtil.getMainUrl)
 
     actionUrl = HtmlUtil.getMainUrl "update"
+    apiUrl = HtmlUtil.getApiAccUrl "amount"
 
     # 直前の入力年月日を保持する
     prevyear = (session[PREVYEAR].nil? ? 0

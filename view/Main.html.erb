@@ -39,13 +39,13 @@
     <div id="account">
       <div id="wacc">
 	支払区分
-	<select name="withdrawFrom">
+	<select name="withdrawFrom" id="withdrawFrom">
 	  <%= wFromsel %>
 	</select>
       </div>
       <div id="pacc">
 	収入区分
-	<select name="paymentTo">
+	<select name="paymentTo" id="paymentTo">
 	  <%= pTosel %>
 	</select>
       </div>
@@ -71,10 +71,12 @@
       <input type="checkbox" name="chkLoan" id="chkLoan">
     </div>
     <div id="accremain">
-      口座残額
-      <span id="accremamount">-</span>円
+      口座残額<br>
+      <span id="waccrem">支払側：<span id="wfremamount">-</span>円</span><br>
+      <span id="paccrem">収入側：<span id="ptremamount">-</span>円</span>
+      <input type="hidden" id="apiUrl" value="<%= apiUrl %>" >
     </div>
     <input type="submit" name="登録" text="登録">
   </form>
 </div>
-<script src='<%= HtmlUtil::URLROOT + "/js/" %>main.js'></script>
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>main.js?v=<%= Time.now.to_i %>'></script>

@@ -21,6 +21,7 @@ class HtmlUtil
   SpecCtrlName = "spec"
   LoanCtrlName = "loan"
   CsvCtrlName = "csv"
+  ApiPrefix = "api"
 
   URLROOT = "/accmgr"
 
@@ -48,6 +49,8 @@ class HtmlUtil
   <head>
     <meta charset-='UTF-8'>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
     <link rel="stylesheet" type="text/css" href="#{URLROOT}/css/accmgr.css">
   </head>
   <body>
@@ -56,7 +59,15 @@ class HtmlUtil
   end
 
   def self.initCgi
-    return {"charset" => "UTF-8", "status" => "OK"}
+    return {:charset => "UTF-8", :status => "OK"}
+  end
+
+  def self.getJsonHeader
+    return ((initCgi)[:type] = "text/json")
+  end
+
+  def self.getPlainTextHeader
+    return ((initCgi)[:type] = "text/plain")
   end
 
   def self.htmlFooter
@@ -125,6 +136,10 @@ class HtmlUtil
 
   def self.getCsvUrl act="index"
     return (createUrl CsvCtrlName,act)
+  end
+
+  def self.getApiAccUrl act
+    return (createUrl ApiPrefix,AccCtrlName,[act])
   end
 
   def self.createUrl ctrl,act="",arg=nil

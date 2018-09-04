@@ -19,6 +19,8 @@ session = CGI::Session.new(cgi)
 isRedirect = false
 redirectLocation = ""
 
+isApi = false
+
 DEBUG = false
 debugStr = ""
 
@@ -41,16 +43,28 @@ end
 debugStr += pathelem if DEBUG
 debugStr += "\n" if DEBUG
 
-### routing rule : as Rails
-###   /foo             => call fooController.index
-###   /foo/bar         => call fooController.bar
-###   /foo/bar/baz/... => call fooController.bar(baz,...)
+### routing rule : as Rails (without API)
+###   /foo                 => call fooController.index
+###   /foo/bar             => call fooController.bar
+###   /foo/bar/baz/...     => call fooController.bar(baz,...)
 
-### Controller interface
+### Controller interface (without API)
 ###  : new (constructor)
 ###  : index, and other methods
 ###  : args   : array
 ###  : return : htmlsource(string), isRedirect(bool), redirectLocation(string)
+
+### routing rule : api + as Rails
+###   /api/foo             => call fooController.index
+###   /api/foo/bar         => call fooController.bar
+###   /api/foo/bar/baz/... => call fooController.bar(baz,...)
+
+### Controller interface (API)
+###  : new (constructor)
+###  : index, and other methods
+###  : args   : array
+###  : return : cgiOpt(hash), apiReturn(string)
+
 ctrler = nil # XxxControllerクラスのインスタンス
 ctrlname = pathelem.shift
 case ctrlname
@@ -92,6 +106,16 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::MainCtrlName
       require_relative './controller/MainController'
       ctrler = MainController.new
+#######################################################
+    when HtmlUtil::ApiPrefix
+      #APIの場合、さらにルーティングする。
+      isApi = true
+      ctrlname = pathelem.shift
+      case ctrlname
+      when HtmlUtil::AccCtrlName
+        require_relative './api/AccController'
+        ctrler = AccController.new
+      end
 #############################################################################
     else # ログイン済でURLが不正な場合はメイン画面へ
       if !isRedirect
@@ -117,13 +141,24 @@ end
 
 ## proc call and print HTML ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 actargs = [cgi.params]
-htmlSource,isRedirect,redirectLocation = ctrler.send(actname, session, actargs.concat(pathelem)) unless isRedirect
-session.close
-if isRedirect
-  print HtmlUtil.htmlRedirect cgi,redirectLocation
+if isApi
+  cgiOpt,apiReturn = ctrler.send(actname, session,
+                                 cgi,
+                                 actargs.concat(pathelem))
+  session.close
+  cgi.out(cgiOpt) { apiReturn }
 else
-  htmlSource += debugStr if DEBUG
-  cgi.out (HtmlUtil.initCgi) {
-    HtmlUtil.htmlHeader + htmlSource + HtmlUtil.htmlFooter
-  }
+  htmlSource,isRedirect,redirectLocation =
+                        ctrler.send(actname, session,
+                                    actargs.concat(pathelem)
+                                   ) unless isRedirect
+  session.close
+  if isRedirect
+    print HtmlUtil.htmlRedirect cgi,redirectLocation
+  else
+    htmlSource += debugStr if DEBUG
+    cgi.out (HtmlUtil.initCgi) {
+      HtmlUtil.htmlHeader + htmlSource + HtmlUtil.htmlFooter
+    }
+  end
 end
