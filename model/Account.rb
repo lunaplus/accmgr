@@ -53,8 +53,8 @@ class Account < ModelMaster
         retval.push("存在しない所有者IDです。")
       end
       if (isins or (not balance.nil?)) and
-          ((not balance.is_a?(Integer)) or (balance < 0))
-        retval.push("口座残高は正数で入力してください。")
+          ((not balance.is_a?(Integer)))
+        retval.push("口座残高は整数で入力してください。")
       end
     end
 
