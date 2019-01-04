@@ -6,7 +6,7 @@ function onfocusAmounts(){
 function onblurAmounts(){
     document.getElementById("amounts").value =
         document.getElementById("amounts").value
-          .replace(/[^\d]/g, '')
+          .replace(/[^\d-]/g, '')
           .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
