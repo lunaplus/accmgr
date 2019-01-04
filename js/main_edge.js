@@ -6,7 +6,7 @@ function onfocusAmounts(){
 function onblurAmounts(){
     document.getElementById("amounts").value =
         document.getElementById("amounts").value
-          .replace(/[^\d]/g, '')
+          .replace(/[^\d-]/g, '')
           .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
@@ -63,7 +63,7 @@ function refreshRemAmount(aid, rem_elm_id){
 	json => -json.amount
     ).then(
         amount => document.getElementById(rem_elm_id).innerHTML =
-	    String(amount).replace(/[^\d]/g,
+	    String(amount).replace(/[^\d-]/g,
 				   '').replace(/(\d)(?=(\d{3})+$)/g,
 					       '$1,')
     );

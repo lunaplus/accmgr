@@ -41,9 +41,13 @@ function onfocusBalance(){
 }
 
 function onblurBalance(){
-    this.value =
-        this.value
-          .replace(/[^\d]/g, '')
+		formatBalance(this);
+}
+
+function formatBalance(e){
+    e.value =
+        e.value
+          .replace(/[^\d-]/g, '')
           .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
@@ -113,6 +117,7 @@ function init(){
 	var blnc = document.getElementById(TXTBL+i);
 	blnc.onfocus = onfocusBalance;
 	blnc.onblur = onblurBalance;
+	formatBalance(blnc);
     }
 
     document.getElementById("submit").onclick = registerData;
