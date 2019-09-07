@@ -10,6 +10,18 @@ function onblurAmounts(){
           .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
+function onfocusPoints(){
+    document.getElementById("points").value =
+        document.getElementById("points").value.replace(/,/g, '');
+}
+
+function onblurPoints(){
+    document.getElementById("points").value =
+        document.getElementById("points").value
+          .replace(/[^\d-]/g, '')
+          .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+}
+
 function onchgKinds(){
     var wpkw = document.getElementById("wpkw")
     var wpkp = document.getElementById("wpkp")
@@ -76,6 +88,8 @@ function init(){
 
     document.getElementById("amounts").onfocus = onfocusAmounts;
     document.getElementById("amounts").onblur = onblurAmounts;
+    document.getElementById("points").onfocus = onfocusPoints;
+    document.getElementById("points").onblur = onblurPoints;
 
     document.getElementById("withdrawFrom").onchange = onChangeWFrom;
     document.getElementById("paymentTo").onchange = onChangePTo;

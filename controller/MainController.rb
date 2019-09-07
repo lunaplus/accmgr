@@ -65,6 +65,7 @@ class MainController
     wfrom = (args[0]["withdrawFrom"][0]).to_i
     pto = (args[0]["paymentTo"][0]).to_i
     amounts = (args[0]["amounts"][0]).gsub(',','').to_i
+    points = (args[0]["points"][0]).gsub(',','').to_i
     desc = args[0]["desc"][0]
     pmonth = (args[0]["payMonth"][0]).to_i
     chkLoan = (args[0]["chkLoan"][0] == "on")
@@ -101,16 +102,20 @@ class MainController
                     ", date : " + date.to_s]
     else
       if (not wfrom.nil?)
-        rethash = Account.addBalance(wfrom, -amounts)
+        rethash = Account.addBalance(wfrom, -(amounts-points))
         tmpupderr += [rethash[:err]] unless rethash[:err].nil?
       end
       if tmpupderr.empty?
+      	# for amounts
         rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
                                     wfrom, pto, amounts, pmonth, desc, loan)
+        rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
+                                    wfrom, pto, -points, pmonth, desc, loan)
+        # for points
         tmpupderr += rethash[:err] unless rethash[:err].nil?
       end
       if tmpupderr.empty? and (not pto.nil?)
-        rethash = Account.addBalance(pto, amounts)
+        rethash = Account.addBalance(pto, (amounts-points))
         tmpupderr += [rethash[:err]] unless rethash[:err].nil?
       end
     end
