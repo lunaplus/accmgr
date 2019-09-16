@@ -1,13 +1,46 @@
+function calculateRemains(){
+    wfcur = parseInt(document.getElementById("wfremamount")
+		     .innerText.replace(/,/g, ''));
+    ptcur = parseInt(document.getElementById("ptremamount")
+		     .innerText.replace(/,/g, ''));
+    amount_str = document.getElementById("amounts").value
+	             .replace(/,/g, '');
+    points_str = document.getElementById("points").value
+	             .replace(/,/g, '');
+
+    if (amount_str == '') amount_str = '0';
+    if (points_str == '') points_str = '0';
+
+    amount = parseInt(amount_str);
+    points = parseInt(points_str);
+
+    if ( !isNaN(amount) && !isNaN(points) ){
+	if ( !isNaN(wfcur) ){ // calc wfamountafter
+	    wfafter = wfcur + amount - points;
+	    document.getElementById("wfamountafter").innerHTML =
+		String(wfafter).replace(/[^\d-]/g, '')
+		  .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	}
+	if ( !isNaN(ptcur) ){ // calc ptamountafter
+	    ptafter = ptcur - amount + points;
+	    document.getElementById("ptamountafter").innerHTML =
+		String(ptafter).replace(/[^\d-]/g, '')
+		  .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	}
+    }
+}
+
 function onfocusAmounts(){
     document.getElementById("amounts").value =
         document.getElementById("amounts").value.replace(/,/g, '');
 }
 
 function onblurAmounts(){
+    amounts = document.getElementById("amounts").value;
     document.getElementById("amounts").value =
-        document.getElementById("amounts").value
-          .replace(/[^\d-]/g, '')
-          .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+        amounts.replace(/[^\d-]/g, '').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+
+    calculateRemains();
 }
 
 function onfocusPoints(){
@@ -16,10 +49,11 @@ function onfocusPoints(){
 }
 
 function onblurPoints(){
+    points = document.getElementById("points").value;
     document.getElementById("points").value =
-        document.getElementById("points").value
-          .replace(/[^\d-]/g, '')
-          .replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+        points.replace(/[^\d-]/g, '').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+
+    calculateRemains();
 }
 
 function onchgKinds(){

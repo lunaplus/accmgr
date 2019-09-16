@@ -76,8 +76,13 @@
     </div>
     <div id="accremain">
       口座残額<br>
-      <span id="waccrem">支払側：<span id="wfremamount">-</span>円</span><br>
-      <span id="paccrem">収入側：<span id="ptremamount">-</span>円</span>
+      <span id="waccrem">支払側：<span id="wfremamount">-</span>円
+	-> <span id="wfamountafter">-</span>円
+      </span>
+      <br>
+      <span id="paccrem">収入側：<span id="ptremamount">-</span>円
+	-> <span id="ptamountafter">-</span>円
+      </span>
       <input type="hidden" id="apiUrl" value="<%= apiUrl %>" >
     </div>
     <input type="submit" name="登録" text="登録">

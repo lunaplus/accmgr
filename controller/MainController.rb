@@ -108,9 +108,11 @@ class MainController
       if tmpupderr.empty?
       	# for amounts
         rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                    wfrom, pto, amounts, pmonth, desc, loan)
+                                    wfrom, pto, amounts, pmonth, desc, loan
+				    ) if amounts != 0
         rethash = Specification.ins((HtmlUtil.fmtDtToStr wpd), exp,
-                                    wfrom, pto, -points, pmonth, desc, loan)
+                                    wfrom, pto, -points, pmonth, desc, loan
+				    ) if points != 0
         # for points
         tmpupderr += rethash[:err] unless rethash[:err].nil?
       end
