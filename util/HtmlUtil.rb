@@ -397,10 +397,12 @@ class HtmlUtil
       retval = "<option>" + explist[:err] + "</option>"
     else
       retval = "<option value=\"\"></option>"
+      i = 1
       explist[:retval].each do |elm|
         retval += "<option value=\"#{elm[:eid]}\""
         retval += " selected " if (not arg.nil?) and elm[:eid]==arg
-        retval += ">#{elm[:name]}</option>"
+        retval += ">#{i}:#{elm[:name]}</option>"
+        i += 1
       end
     end
 
@@ -416,7 +418,7 @@ class HtmlUtil
       acclist[:retval].each do |elm|
         retval += "<option value=\"#{elm[:AID]}\""
         retval += " selected " if (not arg.nil?) and elm[:AID]==arg
-        retval += ">#{elm[:name]}</option>"
+        retval += ">#{elm[:AID]}:#{elm[:name]}</option>"
       end
     end
     return retval
